@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran_app/features/home/presentation/widgets/surah_title.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../data/dummy_surahs.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../quran/presentation/cubit/quran_cubit.dart';
+import '../../../quran/presentation/cubit/quran_state.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -223,16 +226,31 @@ class HomeScreen extends StatelessWidget {
               ),
 
               SizedBox(height: 24.h),
-
               Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.zero,
-                  itemCount: dummySurahs.length,
-                  separatorBuilder: (_, __) {
-                    return SizedBox(height: 16.h);
-                  },
-                  itemBuilder: (context, index) {
-                    return SurahTile(surah: dummySurahs[index]);
+                child: BlocBuilder<QuranCubit, QuranState>(
+                  builder: (context, state) {
+                    if (state is QuranLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (state is QuranError) {
+                      return Center(child: Text(state.message));
+                    }
+
+                    if (state is QuranLoaded) {
+                      return ListView.separated(
+                        padding: EdgeInsets.zero,
+                        itemCount: state.surahs.length,
+                        separatorBuilder: (_, __) {
+                          return SizedBox(height: 16.h);
+                        },
+                        itemBuilder: (context, index) {
+                          return SurahTile(surah: state.surahs[index]);
+                        },
+                      );
+                    }
+
+                    return const SizedBox();
                   },
                 ),
               ),

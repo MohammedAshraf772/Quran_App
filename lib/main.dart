@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app/app_router.dart';
+import 'core/network/api_service.dart';
 import 'core/theme/app_theme.dart';
+import 'features/quran/data/datasource/quran_remote_datasource.dart';
+import 'features/quran/data/repositories/quran_repository.dart';
+import 'features/quran/presentation/cubit/quran_cubit.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const QuranApp());
 }
 
@@ -15,11 +22,25 @@ class QuranApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        routerConfig: AppRouter.router,
-      ),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create:
+                  (_) => QuranCubit(
+                    QuranRepository(QuranRemoteDataSource(ApiService())),
+                  )..getSurahs(),
+            ),
+          ],
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            routerConfig: AppRouter.router,
+          ),
+        );
+      },
     );
   }
 }
