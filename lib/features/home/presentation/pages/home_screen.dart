@@ -14,19 +14,26 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
 
       bottomNavigationBar: Container(
-        height: 80.h,
-        margin: EdgeInsets.all(20.w),
+        margin: EdgeInsets.only(left: 24.w, right: 24.w, bottom: 24.h),
+        height: 75.h,
         decoration: BoxDecoration(
           color: AppColors.primary,
-          borderRadius: BorderRadius.circular(25.r),
+          borderRadius: BorderRadius.circular(30.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Icon(Icons.home, color: Colors.white, size: 28.sp),
-            Icon(Icons.search, color: Colors.white70, size: 28.sp),
-            Icon(Icons.bookmark, color: Colors.white70, size: 28.sp),
-            Icon(Icons.person, color: Colors.white70, size: 28.sp),
+            _navItem(Icons.home_filled, true),
+            _navItem(Icons.search, false),
+            _navItem(Icons.bookmark, false),
+            _navItem(Icons.person, false),
           ],
         ),
       ),
@@ -37,7 +44,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 20.h),
+              SizedBox(height: 18.h),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -48,37 +55,44 @@ class HomeScreen extends StatelessWidget {
                       Text(
                         'Assalamualaikum',
                         style: TextStyle(
-                          fontSize: 14.sp,
                           color: AppColors.textSecondary,
+                          fontSize: 16.sp,
                         ),
                       ),
-                      SizedBox(height: 6.h),
+                      SizedBox(height: 8.h),
                       Text(
                         'Mohamed',
                         style: TextStyle(
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
+                          fontSize: 30.sp,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  Icon(
-                    Icons.notifications_none,
-                    size: 28.sp,
-                    color: AppColors.textPrimary,
+                  Container(
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                    child: Icon(
+                      Icons.notifications_none,
+                      size: 24.sp,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ],
               ),
 
-              SizedBox(height: 24.h),
+              SizedBox(height: 28.h),
 
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 height: 58.h,
+                padding: EdgeInsets.symmetric(horizontal: 18.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18.r),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   children: [
@@ -87,7 +101,7 @@ class HomeScreen extends StatelessWidget {
                       color: AppColors.textSecondary,
                       size: 24.sp,
                     ),
-                    SizedBox(width: 12.w),
+                    SizedBox(width: 14.w),
                     Text(
                       'Search surah...',
                       style: TextStyle(
@@ -99,56 +113,124 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 24.h),
+              SizedBox(height: 28.h),
 
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(20.w),
+                padding: EdgeInsets.all(24.w),
                 decoration: BoxDecoration(
-                  color: AppColors.cardColor,
-                  borderRadius: BorderRadius.circular(24.r),
+                  borderRadius: BorderRadius.circular(28.r),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF014D40), Color(0xFF0B6B5B)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Stack(
                   children: [
-                    Text(
-                      'Last Read',
-                      style: TextStyle(color: Colors.white70, fontSize: 14.sp),
-                    ),
-                    SizedBox(height: 12.h),
-                    Text(
-                      'Al-Fatihah',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
+                    Positioned(
+                      right: -20,
+                      bottom: -20,
+                      child: Icon(
+                        Icons.menu_book,
+                        color: Colors.white.withOpacity(0.08),
+                        size: 120.sp,
                       ),
                     ),
-                    SizedBox(height: 6.h),
-                    Text(
-                      'Ayah No: 1',
-                      style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.menu_book_outlined,
+                              color: Colors.white70,
+                              size: 18.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Last Read',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 22.h),
+                        Text(
+                          'Al-Fatihah',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          'Ayah No: 1',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
 
-              SizedBox(height: 30.h),
+              SizedBox(height: 32.h),
 
-              Text(
-                'Surah',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+              Row(
+                children: [
+                  Text(
+                    'Surah',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 24.w),
+                  Text(
+                    'Para',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  SizedBox(width: 24.w),
+                  Text(
+                    'Page',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 12.h),
+
+              Container(
+                width: 40.w,
+                height: 3.h,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
               ),
 
-              SizedBox(height: 20.h),
+              SizedBox(height: 24.h),
 
               Expanded(
-                child: ListView.builder(
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
                   itemCount: dummySurahs.length,
+                  separatorBuilder: (_, __) {
+                    return SizedBox(height: 16.h);
+                  },
                   itemBuilder: (context, index) {
                     return SurahTile(surah: dummySurahs[index]);
                   },
@@ -158,6 +240,14 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _navItem(IconData icon, bool active) {
+    return Icon(
+      icon,
+      color: active ? Colors.white : Colors.white70,
+      size: 28.sp,
     );
   }
 }
