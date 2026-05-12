@@ -14,7 +14,7 @@ class SurahTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push('/details');
+        context.push('/details', extra: surah);
       },
       child: Container(
         padding: EdgeInsets.all(18.w),

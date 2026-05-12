@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/features/splash/presentation/screens/splashScreen.dart';
 import 'package:quran_app/features/surah_details/presentation/pages/surah_details_screen.dart';
@@ -18,7 +19,10 @@ class AppRouter {
       GoRoute(
         path: '/details',
         builder: (context, state) {
-          final surah = state.extra as SurahModel;
+          final surah = state.extra;
+          if (surah == null || surah is! SurahModel) {
+            return const Scaffold(body: Center(child: Text('No Surah Data')));
+          }
 
           return SurahDetailsScreen(surah: surah);
         },
