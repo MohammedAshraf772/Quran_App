@@ -3,10 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran_app/features/home/presentation/widgets/surah_title.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../../quran/presentation/cubit/quran_cubit.dart';
-import '../../../quran/presentation/cubit/quran_state.dart';
+import '../../data/dummy_surahs.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,17 +15,10 @@ class HomeScreen extends StatelessWidget {
 
       bottomNavigationBar: Container(
         margin: EdgeInsets.only(left: 24.w, right: 24.w, bottom: 24.h),
-        height: 75.h,
+        height: 74.h,
         decoration: BoxDecoration(
           color: AppColors.primary,
-          borderRadius: BorderRadius.circular(30.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(28.r),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -59,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                         'Assalamualaikum',
                         style: TextStyle(
                           color: AppColors.textSecondary,
-                          fontSize: 16.sp,
+                          fontSize: 18.sp,
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -67,23 +57,20 @@ class HomeScreen extends StatelessWidget {
                         'Mohamed',
                         style: TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 30.sp,
+                          fontSize: 34.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    width: 56.w,
+                    height: 56.w,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(18.r),
                     ),
-                    child: Icon(
-                      Icons.notifications_none,
-                      size: 24.sp,
-                      color: AppColors.textPrimary,
-                    ),
+                    child: Icon(Icons.notifications_none, size: 28.sp),
                   ),
                 ],
               ),
@@ -91,7 +78,7 @@ class HomeScreen extends StatelessWidget {
               SizedBox(height: 28.h),
 
               Container(
-                height: 58.h,
+                height: 60.h,
                 padding: EdgeInsets.symmetric(horizontal: 18.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -99,17 +86,13 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.search,
-                      color: AppColors.textSecondary,
-                      size: 24.sp,
-                    ),
-                    SizedBox(width: 14.w),
+                    Icon(Icons.search, color: AppColors.textSecondary),
+                    SizedBox(width: 12.w),
                     Text(
                       'Search surah...',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 14.sp,
+                        fontSize: 15.sp,
                       ),
                     ),
                   ],
@@ -122,22 +105,20 @@ class HomeScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: EdgeInsets.all(24.w),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28.r),
+                  borderRadius: BorderRadius.circular(30.r),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF014D40), Color(0xFF0B6B5B)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF015248), Color(0xFF0A7B65)],
                   ),
                 ),
                 child: Stack(
                   children: [
                     Positioned(
-                      right: -20,
-                      bottom: -20,
+                      right: -10,
+                      bottom: -10,
                       child: Icon(
-                        Icons.menu_book,
+                        Icons.menu_book_rounded,
                         color: Colors.white.withOpacity(0.08),
-                        size: 120.sp,
+                        size: 130.sp,
                       ),
                     ),
                     Column(
@@ -146,7 +127,7 @@ class HomeScreen extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              Icons.menu_book_outlined,
+                              Icons.menu_book,
                               color: Colors.white70,
                               size: 18.sp,
                             ),
@@ -155,17 +136,17 @@ class HomeScreen extends StatelessWidget {
                               'Last Read',
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 14.sp,
+                                fontSize: 15.sp,
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 22.h),
+                        SizedBox(height: 24.h),
                         Text(
                           'Al-Fatihah',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 28.sp,
+                            fontSize: 32.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -174,7 +155,7 @@ class HomeScreen extends StatelessWidget {
                           'Ayah No: 1',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 14.sp,
+                            fontSize: 15.sp,
                           ),
                         ),
                       ],
@@ -183,7 +164,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 32.h),
+              SizedBox(height: 30.h),
 
               Row(
                 children: [
@@ -191,66 +172,51 @@ class HomeScreen extends StatelessWidget {
                     'Surah',
                     style: TextStyle(
                       color: AppColors.primary,
-                      fontSize: 18.sp,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 24.w),
+                  SizedBox(width: 26.w),
                   Text(
                     'Para',
                     style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 16.sp,
+                      fontSize: 18.sp,
                     ),
                   ),
-                  SizedBox(width: 24.w),
+                  SizedBox(width: 26.w),
                   Text(
                     'Page',
                     style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 16.sp,
+                      fontSize: 18.sp,
                     ),
                   ),
                 ],
               ),
 
-              SizedBox(height: 12.h),
+              SizedBox(height: 10.h),
 
               Container(
-                width: 40.w,
-                height: 3.h,
+                width: 42.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(10.r),
                 ),
               ),
 
-              SizedBox(height: 24.h),
+              SizedBox(height: 22.h),
+
               Expanded(
-                child: BlocBuilder<QuranCubit, QuranState>(
-                  builder: (context, state) {
-                    if (state is QuranLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (state is QuranError) {
-                      return Center(child: Text(state.message));
-                    }
-
-                    if (state is QuranLoaded) {
-                      return ListView.separated(
-                        padding: EdgeInsets.zero,
-                        itemCount: state.surahs.length,
-                        separatorBuilder: (_, __) {
-                          return SizedBox(height: 16.h);
-                        },
-                        itemBuilder: (context, index) {
-                          return SurahTile(surah: state.surahs[index]);
-                        },
-                      );
-                    }
-
-                    return const SizedBox();
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: dummySurahs.length,
+                  separatorBuilder: (_, __) {
+                    return SizedBox(height: 16.h);
+                  },
+                  itemBuilder: (context, index) {
+                    return SurahTile(surah: dummySurahs[index]);
                   },
                 ),
               ),

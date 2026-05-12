@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran_app/features/quran/data/models/surah_model.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
 class SurahDetailsScreen extends StatelessWidget {
-  const SurahDetailsScreen({super.key});
+  final SurahModel surah;
 
+  const SurahDetailsScreen({super.key, required this.surah});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
