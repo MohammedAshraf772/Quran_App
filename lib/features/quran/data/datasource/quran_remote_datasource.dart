@@ -1,34 +1,21 @@
 import '../../../../core/network/api_service.dart';
-import '../models/ayah_model.dart';
-import '../models/surah_model.dart';
 
 class QuranRemoteDataSource {
   final ApiService apiService;
 
   QuranRemoteDataSource(this.apiService);
 
-  Future<List<SurahModel>> getSurahs() async {
-    final response = await apiService.dio.get('surah');
+  Future<List<dynamic>> getSurahs() async {
+    final response = await apiService.get("https://api.alquran.cloud/v1/surah");
 
-    final List data = response.data['data'];
-
-    return data.map((e) {
-      return SurahModel(
-        number: e['number'],
-        name: e['name'],
-        englishName: e['englishName'],
-        verses: e['numberOfAyahs'],
-      );
-    }).toList();
+    return response.data['data'];
   }
 
-  Future<List<AyahModel>> getSurahDetails(int surahNumber) async {
-    final response = await apiService.dio.get('surah/$surahNumber/ar.alafasy');
+  Future<List<dynamic>> getSurahDetails(int number) async {
+    final response = await apiService.get(
+      "https://api.alquran.cloud/v1/surah/$number",
+    );
 
-    final List ayahs = response.data['data']['ayahs'];
-
-    return ayahs.map((e) {
-      return AyahModel(number: e['numberInSurah'], arabicText: e['text']);
-    }).toList();
+    return response.data['data']['ayahs'];
   }
 }

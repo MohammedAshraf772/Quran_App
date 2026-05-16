@@ -1,6 +1,10 @@
 class AyahModel {
   final int number;
-  final String arabicText;
+  final String text;
 
-  const AyahModel({required this.number, required this.arabicText});
+  AyahModel({required this.number, required this.text});
+
+  factory AyahModel.fromJson(Map<String, dynamic> json) {
+    return AyahModel(number: json['numberInSurah'], text: json['text']);
+  }
 }

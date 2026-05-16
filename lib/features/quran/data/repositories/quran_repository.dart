@@ -1,5 +1,4 @@
 import '../datasource/quran_remote_datasource.dart';
-import '../models/ayah_model.dart';
 import '../models/surah_model.dart';
 
 class QuranRepository {
@@ -8,10 +7,14 @@ class QuranRepository {
   QuranRepository(this.remoteDataSource);
 
   Future<List<SurahModel>> getSurahs() async {
-    return await remoteDataSource.getSurahs();
+    final data = await remoteDataSource.getSurahs();
+
+    return data.map<SurahModel>((e) {
+      return SurahModel.fromJson(e);
+    }).toList();
   }
 
-  Future<List<AyahModel>> getSurahDetails(int surahNumber) async {
-    return await remoteDataSource.getSurahDetails(surahNumber);
+  Future<List<dynamic>> getSurahDetails(int number) async {
+    return await remoteDataSource.getSurahDetails(number);
   }
 }

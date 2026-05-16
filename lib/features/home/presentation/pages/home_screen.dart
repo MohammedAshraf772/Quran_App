@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran_app/features/home/presentation/widgets/surah_title.dart';
+import 'package:quran_app/features/quran/presentation/cubit/quran_cubit.dart';
+import 'package:quran_app/features/quran/presentation/cubit/quran_state.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../data/dummy_surahs.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,22 +15,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController searchController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
 
-  List filteredSurahs = dummySurahs;
-
-  void searchSurah(String value) {
-    final result =
-        dummySurahs.where((surah) {
-          return surah.englishName.toLowerCase().contains(
-                value.toLowerCase(),
-              ) ||
-              surah.name.contains(value);
-        }).toList();
-
-    setState(() {
-      filteredSurahs = result;
-    });
+    context.read<QuranCubit>().getSurahs();
   }
 
   int currentIndex = 0;
@@ -65,186 +56,192 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
 
-              children: [
-                SizedBox(height: 18.h),
+            children: [
+              SizedBox(height: 18.h),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              header(),
 
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              SizedBox(height: 28.h),
 
-                      children: [
-                        Text(
-                          'Assalamualaikum',
+              searchField(),
 
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
+              SizedBox(height: 28.h),
 
-                            fontSize: 18.sp,
-                          ),
-                        ),
+              lastReadCard(),
 
-                        SizedBox(height: 8.h),
+              SizedBox(height: 30.h),
 
-                        Text(
-                          'Mohamed',
+              Text(
+                'Surah',
 
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: AppColors.primary,
 
-                            fontSize: 34.sp,
+                  fontSize: 22.sp,
 
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    Container(
-                      width: 56.w,
-                      height: 56.w,
-
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-
-                        borderRadius: BorderRadius.circular(18.r),
-                      ),
-
-                      child: Icon(Icons.notifications_none, size: 28.sp),
-                    ),
-                  ],
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
 
-                SizedBox(height: 28.h),
+              SizedBox(height: 24.h),
 
-                Container(
-                  height: 60.h,
+              Expanded(
+                child: BlocBuilder<QuranCubit, QuranState>(
+                  builder: (context, state) {
+                    if (state is QuranLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                  padding: EdgeInsets.symmetric(horizontal: 18.w),
+                    if (state is QuranError) {
+                      return Center(child: Text(state.message));
+                    }
 
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+                    if (state is QuranLoaded) {
+                      return ListView.separated(
+                        itemCount: state.surahs.length,
 
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
+                        separatorBuilder: (_, __) => SizedBox(height: 16.h),
 
-                  child: TextField(
-                    controller: searchController,
+                        itemBuilder: (context, index) {
+                          return SurahTile(surah: state.surahs[index]);
+                        },
+                      );
+                    }
 
-                    onChanged: searchSurah,
-
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-
-                      hintText: 'Search surah...',
-
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 28.h),
-
-                Container(
-                  width: double.infinity,
-
-                  padding: EdgeInsets.all(24.w),
-
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30.r),
-
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF015248), Color(0xFF0A7B65)],
-                    ),
-                  ),
-
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.menu_book, color: Colors.white70),
-
-                          SizedBox(width: 8.w),
-
-                          Text(
-                            'Last Read',
-
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: 24.h),
-
-                      Text(
-                        'Al-Fatihah',
-
-                        style: TextStyle(
-                          color: Colors.white,
-
-                          fontSize: 32.sp,
-
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      SizedBox(height: 8.h),
-
-                      Text(
-                        'Ayah No: 1',
-
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: 30.h),
-
-                Text(
-                  'Surah',
-
-                  style: TextStyle(
-                    color: AppColors.primary,
-
-                    fontSize: 22.sp,
-
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                SizedBox(height: 24.h),
-
-                ListView.separated(
-                  shrinkWrap: true,
-
-                  physics: const NeverScrollableScrollPhysics(),
-
-                  itemCount: filteredSurahs.length,
-
-                  separatorBuilder: (_, __) => SizedBox(height: 16.h),
-
-                  itemBuilder: (context, index) {
-                    return SurahTile(surah: filteredSurahs[index]);
+                    return const SizedBox();
                   },
                 ),
-
-                SizedBox(height: 120.h),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget header() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Text(
+              'Assalamualaikum',
+
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 18.sp),
+            ),
+
+            SizedBox(height: 8.h),
+
+            Text(
+              'Mohamed',
+
+              style: TextStyle(
+                color: AppColors.textPrimary,
+
+                fontSize: 34.sp,
+
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+
+        Container(
+          width: 56.w,
+          height: 56.w,
+
+          decoration: BoxDecoration(
+            color: Colors.white,
+
+            borderRadius: BorderRadius.circular(18.r),
+          ),
+
+          child: Icon(Icons.notifications_none, size: 28.sp),
+        ),
+      ],
+    );
+  }
+
+  Widget searchField() {
+    return Container(
+      height: 60.h,
+
+      padding: EdgeInsets.symmetric(horizontal: 18.w),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+
+      child: const TextField(
+        decoration: InputDecoration(
+          border: InputBorder.none,
+
+          hintText: 'Search surah...',
+
+          prefixIcon: Icon(Icons.search),
+        ),
+      ),
+    );
+  }
+
+  Widget lastReadCard() {
+    return Container(
+      width: double.infinity,
+
+      padding: EdgeInsets.all(24.w),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30.r),
+
+        gradient: const LinearGradient(
+          colors: [Color(0xFF015248), Color(0xFF0A7B65)],
+        ),
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+
+        children: [
+          Row(
+            children: [
+              Icon(Icons.menu_book, color: Colors.white70),
+
+              SizedBox(width: 8.w),
+
+              Text('Last Read', style: TextStyle(color: Colors.white70)),
+            ],
+          ),
+
+          SizedBox(height: 24.h),
+
+          Text(
+            'Al-Fatihah',
+
+            style: TextStyle(
+              color: Colors.white,
+
+              fontSize: 32.sp,
+
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          SizedBox(height: 8.h),
+
+          Text('Ayah No: 1', style: TextStyle(color: Colors.white70)),
+        ],
       ),
     );
   }

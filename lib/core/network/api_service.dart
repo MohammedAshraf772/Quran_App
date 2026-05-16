@@ -1,26 +1,9 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 
 class ApiService {
-  late final Dio dio;
+  final Dio dio = Dio();
 
-  ApiService() {
-    dio = Dio(
-      BaseOptions(
-        baseUrl: 'https://api.alquran.cloud/v1/',
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-      ),
-    );
-
-    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-      final client = HttpClient();
-
-      client.badCertificateCallback = (cert, host, port) => true;
-
-      return client;
-    };
+  Future<Response> get(String url) async {
+    return await dio.get(url);
   }
 }

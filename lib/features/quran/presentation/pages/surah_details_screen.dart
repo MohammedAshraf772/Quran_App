@@ -1,143 +1,105 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../data/models/surah_model.dart';
+import '../../../../core/network/api_service.dart';
 
-class SurahDetailsScreen extends StatelessWidget {
-  final SurahModel surah;
+import '../../data/datasource/quran_remote_datasource.dart';
+import '../../data/repositories/quran_repository.dart';
 
-  const SurahDetailsScreen({super.key, required this.surah});
+import '../cubit/surah_details_cubit.dart';
+import '../cubit/surah_details_state.dart';
+
+class SurahScreen extends StatelessWidget {
+  final int surahNumber;
+  final String surahName;
+
+  const SurahScreen({
+    super.key,
+    required this.surahNumber,
+    required this.surahName,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return BlocProvider(
+      create:
+          (_) => SurahDetailsCubit(
+            QuranRepository(QuranRemoteDataSource(ApiService())),
+          )..getSurahDetails(surahNumber),
 
-      appBar: AppBar(
+      child: Scaffold(
         backgroundColor: AppColors.background,
-        elevation: 0,
-        centerTitle: true,
 
-        title: Text(
-          surah.englishName,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 22.sp,
-            fontWeight: FontWeight.bold,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          centerTitle: true,
+
+          title: Text(
+            surahName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-      ),
 
-      body: Padding(
-        padding: EdgeInsets.all(24.w),
+        body: BlocBuilder<SurahDetailsCubit, SurahDetailsState>(
+          builder: (context, state) {
+            if (state is SurahDetailsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28.r),
-
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF015248), Color(0xFF0A7B65)],
+            if (state is SurahDetailsError) {
+              return Center(
+                child: Text(
+                  state.message,
+                  style: const TextStyle(color: Colors.white),
                 ),
-              ),
+              );
+            }
 
-              child: Column(
-                children: [
-                  Text(
-                    surah.name,
+            if (state is SurahDetailsLoaded) {
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
 
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  SizedBox(height: 8.h),
-
-                  Text(
-                    '${surah.verses} Verses',
-
-                    style: TextStyle(color: Colors.white70, fontSize: 15.sp),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 24.h),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: surah.verses,
+                itemCount: state.ayahs.length,
 
                 itemBuilder: (context, index) {
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 16.h),
+                  final ayah = state.ayahs[index];
 
-                    padding: EdgeInsets.all(20.w),
+                  return Container(
+                    width: double.infinity,
+
+                    margin: const EdgeInsets.only(bottom: 14),
+
+                    padding: const EdgeInsets.all(18),
 
                     decoration: BoxDecoration(
-                      color: Colors.white,
-
-                      borderRadius: BorderRadius.circular(24.r),
+                      color: AppColors.cardColor,
+                      borderRadius: BorderRadius.circular(20),
                     ),
 
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Text(
+                      "${ayah['text']} ﴿${ayah['numberInSurah']}﴾",
 
-                      children: [
-                        Container(
-                          width: 36.w,
-                          height: 36.w,
+                      textAlign: TextAlign.right,
 
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-
-                            shape: BoxShape.circle,
-                          ),
-
-                          child: Center(
-                            child: Text(
-                              '${index + 1}',
-
-                              style: TextStyle(
-                                color: Colors.white,
-
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(width: 18.w),
-
-                        Expanded(
-                          child: Text(
-                            'هذه الآية رقم ${index + 1} من سورة ${surah.name}',
-
-                            textAlign: TextAlign.right,
-
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-
-                              fontSize: 22.sp,
-
-                              height: 2,
-                            ),
-                          ),
-                        ),
-                      ],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        height: 2,
+                        fontFamily: 'Amiri',
+                      ),
                     ),
                   );
                 },
-              ),
-            ),
-          ],
+              );
+            }
+
+            return const SizedBox();
+          },
         ),
       ),
     );
