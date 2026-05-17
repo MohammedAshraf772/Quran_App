@@ -13,10 +13,13 @@ class SurahModel {
 
   factory SurahModel.fromJson(Map<String, dynamic> json) {
     return SurahModel(
-      number: json['number'],
-      name: json['name'],
-      englishName: json['englishName'],
-      ayahs: json['numberOfAyahs'],
+      number: json['number'] ?? 0,
+
+      name: json['name'] ?? '',
+
+      englishName: json['englishName'] ?? '',
+
+      ayahs: json['numberOfAyahs'] ?? 0,
     );
   }
 }

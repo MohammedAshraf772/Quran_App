@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:quran_app/features/quran/data/models/surah_model.dart';
 
 import '../../../../core/constants/app_colors.dart';
+
+import '../../../quran/data/models/surah_model.dart';
+
+import '../../../quran/presentation/pages/surah_details_screen.dart';
 
 class SurahTile extends StatelessWidget {
   final SurahModel surah;
@@ -10,60 +13,74 @@ class SurahTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-
-      padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        color: AppColors.cardColor,
-        borderRadius: BorderRadius.circular(18),
-      ),
-
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: AppColors.primary,
-            child: Text(
-              surah.number.toString(),
-              style: const TextStyle(color: Colors.white),
-            ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) {
+              return SurahDetailsScreen(surah: surah);
+            },
           ),
+        );
+      },
 
-          const SizedBox(width: 16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  surah.englishName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+        padding: const EdgeInsets.all(16),
+
+        decoration: BoxDecoration(
+          color: AppColors.cardColor,
+          borderRadius: BorderRadius.circular(18),
+        ),
+
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: AppColors.primary,
+
+              child: Text(
+                surah.number.toString(),
+
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  Text(
+                    surah.englishName,
+
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 4),
+                  const SizedBox(height: 4),
 
-                Text(
-                  "${surah.ayahs} Ayahs",
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
+                  Text(
+                    "${surah.ayahs} Ayahs",
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          Text(
-            surah.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontFamily: 'Amiri',
+            Text(
+              surah.name,
+
+              style: const TextStyle(color: Colors.white, fontSize: 24),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
