@@ -1,21 +1,32 @@
-import '../../../../core/network/api_service.dart';
+import 'package:dio/dio.dart';
+
+import '../models/ayah_model.dart';
+import '../models/surah_model.dart';
 
 class QuranRemoteDataSource {
-  final ApiService apiService;
+  final Dio dio;
 
-  QuranRemoteDataSource(this.apiService);
+  QuranRemoteDataSource(this.dio);
 
-  Future<List<dynamic>> getSurahs() async {
-    final response = await apiService.get("https://api.alquran.cloud/v1/surah");
+  Future<List<SurahModel>> getSurahs() async {
+    final response = await dio.get('https://api.alquran.cloud/v1/surah');
 
-    return response.data['data'];
+    final List data = response.data['data'];
+
+    return data.map((e) {
+      return SurahModel.fromJson(e);
+    }).toList();
   }
 
-  Future<List<dynamic>> getSurahDetails(int number) async {
-    final response = await apiService.get(
-      "https://api.alquran.cloud/v1/surah/$number",
+  Future<List<AyahModel>> getSurahDetails(int number) async {
+    final response = await dio.get(
+      'https://api.alquran.cloud/v1/surah/$number',
     );
 
-    return response.data['data']['ayahs'];
+    final List ayahs = response.data['data']['ayahs'];
+
+    return ayahs.map((e) {
+      return AyahModel.fromJson(e);
+    }).toList();
   }
 }
