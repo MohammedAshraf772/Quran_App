@@ -12,8 +12,7 @@ import 'features/quran/presentation/cubit/quran_cubit.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final repository = QuranRepository(QuranRemoteDataSource(ApiService()));
-
+  final repository = QuranRepository(QuranRemoteDataSource(ApiService().dio));
   runApp(
     BlocProvider(
       create: (_) => QuranCubit(repository)..getSurahs(),

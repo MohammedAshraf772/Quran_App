@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/models/surah_model.dart';
 import '../../data/repositories/quran_repository.dart';
+
 import 'quran_state.dart';
 
 class QuranCubit extends Cubit<QuranState> {

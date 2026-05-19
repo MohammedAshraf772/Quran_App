@@ -9,7 +9,7 @@ class QuranRemoteDataSource {
   QuranRemoteDataSource(this.dio);
 
   Future<List<SurahModel>> getSurahs() async {
-    final response = await dio.get('https://api.alquran.cloud/v1/surah');
+    final response = await dio.get('https://equran.id/api/v2/surat');
 
     final List data = response.data['data'];
 
@@ -19,13 +19,11 @@ class QuranRemoteDataSource {
   }
 
   Future<List<AyahModel>> getSurahDetails(int number) async {
-    final response = await dio.get(
-      'https://api.alquran.cloud/v1/surah/$number',
-    );
+    final response = await dio.get('https://equran.id/api/v2/surat/$number');
 
-    final List ayahs = response.data['data']['ayahs'];
+    final List data = response.data['data']['ayat'];
 
-    return ayahs.map((e) {
+    return data.map((e) {
       return AyahModel.fromJson(e);
     }).toList();
   }
