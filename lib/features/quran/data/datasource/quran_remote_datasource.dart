@@ -1,15 +1,15 @@
-import 'package:dio/dio.dart';
+import 'package:quran_app/core/network/api_service.dart';
 
 import '../models/ayah_model.dart';
 import '../models/surah_model.dart';
 
 class QuranRemoteDataSource {
-  final Dio dio;
+  final ApiService apiService;
 
-  QuranRemoteDataSource(this.dio);
+  QuranRemoteDataSource(this.apiService);
 
   Future<List<SurahModel>> getSurahs() async {
-    final response = await dio.get('https://equran.id/api/v2/surat');
+    final response = await apiService.dio.get('surat');
 
     final List data = response.data['data'];
 
@@ -19,7 +19,7 @@ class QuranRemoteDataSource {
   }
 
   Future<List<AyahModel>> getSurahDetails(int number) async {
-    final response = await dio.get('https://equran.id/api/v2/surat/$number');
+    final response = await apiService.dio.get('surat/$number');
 
     final List data = response.data['data']['ayat'];
 

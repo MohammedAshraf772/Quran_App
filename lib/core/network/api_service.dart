@@ -1,5 +1,15 @@
 import 'package:dio/dio.dart';
 
 class ApiService {
-  final Dio dio = Dio(BaseOptions(baseUrl: 'https://api.alquran.cloud/v1/'));
+  late final Dio dio;
+
+  ApiService() {
+    dio = Dio(
+      BaseOptions(
+        baseUrl: 'https://equran.id/api/v2/',
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+  }
 }

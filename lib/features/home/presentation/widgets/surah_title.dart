@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app/features/surah_details/presentation/pages/surah_details_screen.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
 import '../../../quran/data/models/surah_model.dart';
-
-import '../../../quran/presentation/pages/surah_details_screen.dart';
 
 class SurahTile extends StatelessWidget {
   final SurahModel surah;

@@ -31,8 +31,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   }
 
   Future<void> getDetails() async {
-    final repo = QuranRepository(QuranRemoteDataSource(ApiService().dio));
-
+    final repo = QuranRepository(QuranRemoteDataSource(ApiService()));
     ayahs = await repo.getSurahDetails(widget.surah.number);
 
     setState(() {
@@ -129,6 +128,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                               await LocalStorageService.saveLastRead(
                                 surahNumber: widget.surah.number,
                                 ayahNumber: ayah.number,
+                                surahName: widget.surah.englishName,
                               );
 
                               ScaffoldMessenger.of(context).showSnackBar(
