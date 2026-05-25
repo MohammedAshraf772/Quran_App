@@ -9,7 +9,7 @@ class QuranRemoteDataSource {
   QuranRemoteDataSource(this.apiService);
 
   Future<List<SurahModel>> getSurahs() async {
-    final response = await apiService.dio.get('surat');
+    final response = await apiService.dio.get('surah');
 
     final List data = response.data['data'];
 
@@ -19,9 +19,9 @@ class QuranRemoteDataSource {
   }
 
   Future<List<AyahModel>> getSurahDetails(int number) async {
-    final response = await apiService.dio.get('surat/$number');
+    final response = await apiService.dio.get('surah/$number/ar.alafasy');
 
-    final List data = response.data['data']['ayat'];
+    final List data = response.data['data']['ayahs'];
 
     return data.map((e) {
       return AyahModel.fromJson(e);

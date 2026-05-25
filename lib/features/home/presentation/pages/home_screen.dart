@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:quran_app/features/home/presentation/widgets/surah_title.dart';
-import 'package:quran_app/features/quran/presentation/cubit/quran_cubit.dart';
-import 'package:quran_app/features/quran/presentation/cubit/quran_state.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/local_storage_service.dart';
+import '../../../quran/presentation/cubit/quran_cubit.dart';
+import '../../../quran/presentation/cubit/quran_state.dart';
+import '../widgets/surah_title.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,18 +16,38 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int currentIndex = 0;
+
+  final TextEditingController searchController = TextEditingController();
+
+  String lastReadSurah = 'Al-Fatihah';
+
+  int lastReadAyah = 1;
+
   @override
   void initState() {
     super.initState();
 
+    loadLastRead();
+
     context.read<QuranCubit>().getSurahs();
   }
 
-  int currentIndex = 0;
+  Future<void> loadLastRead() async {
+    final data = await LocalStorageService.getLastRead();
+
+    setState(() {
+      lastReadSurah = data['surahName'] ?? 'Al-Fatihah';
+
+      lastReadAyah = data['ayahNumber'] ?? 1;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+
       backgroundColor: AppColors.background,
 
       bottomNavigationBar: Container(
@@ -36,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
         decoration: BoxDecoration(
           color: AppColors.primary,
-
           borderRadius: BorderRadius.circular(28.r),
         ),
 
@@ -45,11 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
           children: [
             navItem(Icons.home_filled, 0),
-
             navItem(Icons.search, 1),
-
             navItem(Icons.bookmark, 2),
-
             navItem(Icons.person, 3),
           ],
         ),
@@ -82,9 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 style: TextStyle(
                   color: AppColors.primary,
-
                   fontSize: 22.sp,
-
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -103,13 +118,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     if (state is QuranLoaded) {
+                      final surahs =
+                          state.surahs.where((surah) {
+                            return surah.englishName.toLowerCase().contains(
+                                  searchController.text.toLowerCase(),
+                                ) ||
+                                surah.name.contains(searchController.text);
+                          }).toList();
+
                       return ListView.separated(
-                        itemCount: state.surahs.length,
+                        padding: EdgeInsets.only(bottom: 20.h),
+
+                        itemCount: surahs.length,
 
                         separatorBuilder: (_, __) => SizedBox(height: 16.h),
 
                         itemBuilder: (context, index) {
-                          return SurahTile(surah: state.surahs[index]);
+                          return SurahTile(surah: surahs[index]);
                         },
                       );
                     }
@@ -147,9 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               style: TextStyle(
                 color: AppColors.textPrimary,
-
                 fontSize: 34.sp,
-
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -162,7 +185,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           decoration: BoxDecoration(
             color: Colors.white,
-
             borderRadius: BorderRadius.circular(18.r),
           ),
 
@@ -180,16 +202,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
       decoration: BoxDecoration(
         color: Colors.white,
-
         borderRadius: BorderRadius.circular(20.r),
       ),
 
-      child: const TextField(
-        decoration: InputDecoration(
+      child: TextField(
+        controller: searchController,
+
+        onChanged: (_) {
+          setState(() {});
+        },
+
+        decoration: const InputDecoration(
           border: InputBorder.none,
-
           hintText: 'Search surah...',
-
           prefixIcon: Icon(Icons.search),
         ),
       ),
@@ -227,20 +252,22 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 24.h),
 
           Text(
-            'Al-Fatihah',
+            lastReadSurah,
 
             style: TextStyle(
               color: Colors.white,
-
               fontSize: 32.sp,
-
               fontWeight: FontWeight.bold,
             ),
           ),
 
           SizedBox(height: 8.h),
 
-          Text('Ayah No: 1', style: TextStyle(color: Colors.white70)),
+          Text(
+            'Ayah No: $lastReadAyah',
+
+            style: TextStyle(color: Colors.white70),
+          ),
         ],
       ),
     );

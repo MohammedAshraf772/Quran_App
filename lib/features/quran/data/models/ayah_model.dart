@@ -5,9 +5,6 @@ class AyahModel {
   AyahModel({required this.number, required this.text});
 
   factory AyahModel.fromJson(Map<String, dynamic> json) {
-    return AyahModel(
-      number: json['nomorAyat'] ?? 0,
-      text: json['teksArab'] ?? '',
-    );
+    return AyahModel(number: json['numberInSurah'], text: json['text']);
   }
 }

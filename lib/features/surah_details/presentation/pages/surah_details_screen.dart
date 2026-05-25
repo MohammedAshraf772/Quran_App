@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:quran_app/core/network/api_service.dart';
-import 'package:quran_app/features/quran/data/datasource/quran_remote_datasource.dart';
-import 'package:quran_app/features/quran/data/models/ayah_model.dart';
-import 'package:quran_app/features/quran/data/models/surah_model.dart';
-import 'package:quran_app/features/quran/data/repositories/quran_repository.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_storage_service.dart';
+import '../../../quran/data/models/ayah_model.dart';
+import '../../../quran/data/models/surah_model.dart';
+import '../../../quran/data/datasource/quran_remote_datasource.dart';
+import '../../../quran/data/repositories/quran_repository.dart';
+import '../../../../core/network/api_service.dart';
 
 class SurahDetailsScreen extends StatefulWidget {
   final SurahModel surah;
@@ -27,16 +27,31 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   void initState() {
     super.initState();
 
-    getDetails();
+    getSurahDetails();
   }
 
-  Future<void> getDetails() async {
-    final repo = QuranRepository(QuranRemoteDataSource(ApiService()));
-    ayahs = await repo.getSurahDetails(widget.surah.number);
+  Future<void> getSurahDetails() async {
+    try {
+      final repository = QuranRepository(QuranRemoteDataSource(ApiService()));
 
-    setState(() {
-      isLoading = false;
-    });
+      final result = await repository.getSurahDetails(widget.surah.number);
+
+      setState(() {
+        ayahs = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> saveLastRead(int ayahNumber) async {
+    await LocalStorageService.saveLastRead(
+      surahName: widget.surah.englishName,
+      ayahNumber: ayahNumber,
+    );
   }
 
   @override
@@ -47,89 +62,26 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())
-              : CustomScrollView(
-                slivers: [
-                  SliverAppBar(
-                    expandedHeight: 250.h,
-                    pinned: true,
-                    backgroundColor: AppColors.primary,
+              : SafeArea(
+                child: Column(
+                  children: [
+                    topHeader(),
 
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Container(
-                        padding: EdgeInsets.only(
-                          top: 90.h,
-                          left: 24.w,
-                          right: 24.w,
-                        ),
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF015248), Color(0xFF0A7B65)],
-                          ),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 20.h,
                         ),
 
-                        child: Column(
-                          children: [
-                            Text(
-                              widget.surah.name,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 34.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                        itemCount: ayahs.length,
 
-                            SizedBox(height: 10.h),
-
-                            Text(
-                              widget.surah.englishName,
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 18.sp,
-                              ),
-                            ),
-
-                            SizedBox(height: 14.h),
-
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 18.w,
-                                vertical: 8.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white24,
-                                borderRadius: BorderRadius.circular(20.r),
-                              ),
-                              child: Text(
-                                '${widget.surah.ayahs} Ayahs',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15.sp,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SliverPadding(
-                    padding: EdgeInsets.all(20.w),
-
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        childCount: ayahs.length,
-
-                        (context, index) {
+                        itemBuilder: (context, index) {
                           final ayah = ayahs[index];
 
                           return GestureDetector(
                             onTap: () async {
-                              await LocalStorageService.saveLastRead(
-                                surahNumber: widget.surah.number,
-                                ayahNumber: ayah.number,
-                                surahName: widget.surah.englishName,
-                              );
+                              await saveLastRead(ayah.number);
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -141,11 +93,12 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                             child: Container(
                               margin: EdgeInsets.only(bottom: 18.h),
 
-                              padding: EdgeInsets.all(20.w),
+                              padding: EdgeInsets.all(22.w),
 
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(24.r),
+
+                                borderRadius: BorderRadius.circular(28.r),
                               ),
 
                               child: Column(
@@ -153,8 +106,8 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
                                 children: [
                                   Container(
-                                    width: 42.w,
-                                    height: 42.w,
+                                    width: 44.w,
+                                    height: 44.w,
 
                                     decoration: BoxDecoration(
                                       color: AppColors.primary,
@@ -165,26 +118,32 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                                       child: Text(
                                         ayah.number.toString(),
 
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 16.sp,
                                         ),
                                       ),
                                     ),
                                   ),
 
-                                  SizedBox(height: 20.h),
+                                  SizedBox(height: 24.h),
 
                                   Text(
                                     ayah.text,
 
                                     textAlign: TextAlign.right,
 
+                                    textDirection: TextDirection.rtl,
+
                                     style: TextStyle(
-                                      fontSize: 25.sp,
-                                      height: 2.1,
+                                      fontSize: 30.sp,
+
+                                      height: 2.4,
+
                                       color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.w600,
+
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
@@ -194,9 +153,81 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                         },
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+    );
+  }
+
+  Widget topHeader() {
+    return Container(
+      width: double.infinity,
+
+      padding: EdgeInsets.only(
+        top: 20.h,
+        left: 24.w,
+        right: 24.w,
+        bottom: 30.h,
+      ),
+
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF015248), Color(0xFF0A7B65)],
+        ),
+      ),
+
+      child: Column(
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+
+                child: const Icon(Icons.arrow_back, color: Colors.black),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 30.h),
+
+          Text(
+            widget.surah.name,
+
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 42.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          SizedBox(height: 10.h),
+
+          Text(
+            widget.surah.englishName,
+
+            style: TextStyle(color: Colors.white70, fontSize: 22.sp),
+          ),
+
+          SizedBox(height: 22.h),
+
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
+
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+
+            child: Text(
+              '${widget.surah.ayahs} Ayahs',
+
+              style: TextStyle(color: Colors.white, fontSize: 18.sp),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

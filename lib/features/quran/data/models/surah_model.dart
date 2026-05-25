@@ -4,7 +4,7 @@ class SurahModel {
   final String englishName;
   final int ayahs;
 
-  const SurahModel({
+  SurahModel({
     required this.number,
     required this.name,
     required this.englishName,
@@ -13,10 +13,10 @@ class SurahModel {
 
   factory SurahModel.fromJson(Map<String, dynamic> json) {
     return SurahModel(
-      number: json['nomor'] ?? 0,
-      name: json['nama'] ?? '',
-      englishName: json['namaLatin'] ?? '',
-      ayahs: json['jumlahAyat'] ?? 0,
+      number: json['number'],
+      name: json['name'],
+      englishName: json['englishName'],
+      ayahs: json['numberOfAyahs'],
     );
   }
 }
