@@ -1,58 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran_app/features/surah_details/presentation/pages/surah_details_screen.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../quran/data/models/surah_model.dart';
-import '../../../surah_details/presentation/pages/surah_details_screen.dart';
 
 class SurahTile extends StatelessWidget {
   final SurahModel surah;
 
-  const SurahTile({super.key, required this.surah});
+  final VoidCallback onReturn;
+
+  const SurahTile({super.key, required this.surah, required this.onReturn});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => SurahDetailsScreen(surah: surah)),
         );
+
+        onReturn();
       },
 
       child: Container(
-        padding: EdgeInsets.all(18.w),
+        margin: const EdgeInsets.only(bottom: 14),
+
+        padding: const EdgeInsets.all(16),
 
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22.r),
+          color: AppColors.cardColor,
+
+          borderRadius: BorderRadius.circular(18),
         ),
 
         child: Row(
           children: [
-            Container(
-              width: 52.w,
-              height: 52.w,
+            CircleAvatar(
+              backgroundColor: AppColors.primary,
 
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                shape: BoxShape.circle,
-              ),
+              child: Text(
+                surah.number.toString(),
 
-              child: Center(
-                child: Text(
-                  surah.number.toString(),
-
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                  ),
-                ),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
 
-            SizedBox(width: 16.w),
+            const SizedBox(width: 16),
 
             Expanded(
               child: Column(
@@ -62,22 +56,19 @@ class SurahTile extends StatelessWidget {
                   Text(
                     surah.englishName,
 
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 20.sp,
+                      fontSize: 18,
                     ),
                   ),
 
-                  SizedBox(height: 6.h),
+                  const SizedBox(height: 4),
 
                   Text(
-                    "${surah.ayahs} Verses",
+                    "${surah.ayahs} Ayahs",
 
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 15.sp,
-                    ),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -86,11 +77,7 @@ class SurahTile extends StatelessWidget {
             Text(
               surah.name,
 
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 26.sp,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 24),
             ),
           ],
         ),

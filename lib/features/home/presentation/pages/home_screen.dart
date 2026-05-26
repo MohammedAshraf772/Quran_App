@@ -37,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<QuranCubit>().getSurahs();
   }
 
-  void loadLastRead() {
-    final data = LocalStorageService.getLastRead();
+  Future<void> loadLastRead() async {
+    final data = await LocalStorageService.getLastRead();
 
     setState(() {
       lastReadSurah = data['surahName'];
@@ -146,7 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         separatorBuilder: (_, __) => SizedBox(height: 16.h),
 
                         itemBuilder: (context, index) {
-                          return SurahTile(surah: surahs[index]);
+                          return SurahTile(
+                            surah: surahs[index],
+
+                            onReturn: () async {
+                              await loadLastRead();
+                            },
+                          );
                         },
                       );
                     }
@@ -284,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 8.h),
 
           Text(
-            'Ayah: $lastReadAyah  |  Page: $lastReadPage',
+            'Ayah: $lastReadAyah   •   Page: $lastReadPage',
 
             style: TextStyle(color: Colors.white70),
           ),
