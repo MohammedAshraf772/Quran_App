@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_service.dart';
 import '../../../../core/services/local_storage_service.dart';
+
+import '../../../quran/data/datasource/quran_remote_datasource.dart';
 import '../../../quran/data/models/ayah_model.dart';
 import '../../../quran/data/models/surah_model.dart';
-import '../../../quran/data/datasource/quran_remote_datasource.dart';
 import '../../../quran/data/repositories/quran_repository.dart';
-import '../../../../core/network/api_service.dart';
 
 class SurahDetailsScreen extends StatefulWidget {
   final SurahModel surah;
@@ -38,6 +39,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
       setState(() {
         ayahs = result;
+
         isLoading = false;
       });
     } catch (e) {
@@ -47,10 +49,13 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     }
   }
 
-  Future<void> saveLastRead(int ayahNumber) async {
+  Future<void> saveLastRead(int ayahNumber, int pageNumber) async {
     await LocalStorageService.saveLastRead(
       surahName: widget.surah.englishName,
+
       ayahNumber: ayahNumber,
+
+      pageNumber: pageNumber,
     );
   }
 
@@ -68,83 +73,97 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                     topHeader(),
 
                     Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 20.h,
-                        ),
+                      child: PageView.builder(
+                        itemCount: (ayahs.length / 8).ceil(),
 
-                        itemCount: ayahs.length,
+                        itemBuilder: (context, pageIndex) {
+                          final start = pageIndex * 8;
 
-                        itemBuilder: (context, index) {
-                          final ayah = ayahs[index];
+                          final end =
+                              (start + 8 > ayahs.length)
+                                  ? ayahs.length
+                                  : start + 8;
 
-                          return GestureDetector(
-                            onTap: () async {
-                              await saveLastRead(ayah.number);
+                          final pageAyahs = ayahs.sublist(start, end);
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Saved Ayah ${ayah.number}'),
-                                ),
-                              );
-                            },
+                          return Container(
+                            margin: EdgeInsets.all(16.w),
 
-                            child: Container(
-                              margin: EdgeInsets.only(bottom: 18.h),
+                            padding: EdgeInsets.all(22.w),
 
-                              padding: EdgeInsets.all(22.w),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
 
-                              decoration: BoxDecoration(
-                                color: Colors.white,
+                              borderRadius: BorderRadius.circular(24.r),
 
-                                borderRadius: BorderRadius.circular(28.r),
+                              border: Border.all(
+                                color: Colors.green.shade100,
+
+                                width: 2,
                               ),
+                            ),
 
+                            child: SingleChildScrollView(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-
                                 children: [
-                                  Container(
-                                    width: 44.w,
-                                    height: 44.w,
+                                  Text(
+                                    'Page ${pageIndex + 1}',
 
-                                    decoration: BoxDecoration(
+                                    style: TextStyle(
                                       color: AppColors.primary,
-                                      shape: BoxShape.circle,
-                                    ),
 
-                                    child: Center(
-                                      child: Text(
-                                        ayah.number.toString(),
+                                      fontWeight: FontWeight.bold,
 
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16.sp,
-                                        ),
-                                      ),
+                                      fontSize: 18.sp,
                                     ),
                                   ),
 
-                                  SizedBox(height: 24.h),
+                                  SizedBox(height: 20.h),
 
-                                  Text(
-                                    ayah.text,
-
-                                    textAlign: TextAlign.right,
+                                  RichText(
+                                    textAlign: TextAlign.center,
 
                                     textDirection: TextDirection.rtl,
 
-                                    style: TextStyle(
-                                      fontSize: 30.sp,
+                                    text: TextSpan(
+                                      children:
+                                          pageAyahs.map((ayah) {
+                                            return TextSpan(
+                                              text:
+                                                  '${ayah.text} ﴿${ayah.number}﴾ ',
 
-                                      height: 2.4,
+                                              style: TextStyle(
+                                                color: Colors.black,
 
-                                      color: AppColors.textPrimary,
+                                                fontSize: 30.sp,
 
-                                      fontWeight: FontWeight.w500,
+                                                height: 2.2,
+                                              ),
+                                            );
+                                          }).toList(),
                                     ),
+                                  ),
+
+                                  SizedBox(height: 30.h),
+
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      await saveLastRead(
+                                        pageAyahs.last.number,
+
+                                        pageIndex + 1,
+                                      );
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Last Read Saved'),
+                                        ),
+                                      );
+                                    },
+
+                                    child: const Text('Save Last Read'),
                                   ),
                                 ],
                               ),
@@ -185,38 +204,41 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                   Navigator.pop(context);
                 },
 
-                child: const Icon(Icons.arrow_back, color: Colors.black),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ],
           ),
 
-          SizedBox(height: 30.h),
+          SizedBox(height: 24.h),
 
           Text(
             widget.surah.name,
 
             style: TextStyle(
               color: Colors.white,
-              fontSize: 42.sp,
+
+              fontSize: 40.sp,
+
               fontWeight: FontWeight.bold,
             ),
           ),
 
-          SizedBox(height: 10.h),
+          SizedBox(height: 8.h),
 
           Text(
             widget.surah.englishName,
 
-            style: TextStyle(color: Colors.white70, fontSize: 22.sp),
+            style: TextStyle(color: Colors.white70, fontSize: 20.sp),
           ),
 
-          SizedBox(height: 22.h),
+          SizedBox(height: 18.h),
 
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
 
             decoration: BoxDecoration(
               color: Colors.white24,
+
               borderRadius: BorderRadius.circular(30.r),
             ),
 

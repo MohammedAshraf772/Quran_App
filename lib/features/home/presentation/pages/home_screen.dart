@@ -4,8 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_storage_service.dart';
+
 import '../../../quran/presentation/cubit/quran_cubit.dart';
 import '../../../quran/presentation/cubit/quran_state.dart';
+
 import '../widgets/surah_title.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -24,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int lastReadAyah = 1;
 
+  int lastReadPage = 1;
+
   @override
   void initState() {
     super.initState();
@@ -33,13 +37,15 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<QuranCubit>().getSurahs();
   }
 
-  Future<void> loadLastRead() async {
-    final data = await LocalStorageService.getLastRead();
+  void loadLastRead() {
+    final data = LocalStorageService.getLastRead();
 
     setState(() {
-      lastReadSurah = data['surahName'] ?? 'Al-Fatihah';
+      lastReadSurah = data['surahName'];
 
-      lastReadAyah = data['ayahNumber'] ?? 1;
+      lastReadAyah = data['ayahNumber'];
+
+      lastReadPage = data['pageNumber'];
     });
   }
 
@@ -57,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         decoration: BoxDecoration(
           color: AppColors.primary,
+
           borderRadius: BorderRadius.circular(28.r),
         ),
 
@@ -65,8 +72,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
           children: [
             navItem(Icons.home_filled, 0),
+
             navItem(Icons.search, 1),
+
             navItem(Icons.bookmark, 2),
+
             navItem(Icons.person, 3),
           ],
         ),
@@ -99,7 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 style: TextStyle(
                   color: AppColors.primary,
+
                   fontSize: 22.sp,
+
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -172,7 +184,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
               style: TextStyle(
                 color: AppColors.textPrimary,
+
                 fontSize: 34.sp,
+
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -185,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           decoration: BoxDecoration(
             color: Colors.white,
+
             borderRadius: BorderRadius.circular(18.r),
           ),
 
@@ -202,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       decoration: BoxDecoration(
         color: Colors.white,
+
         borderRadius: BorderRadius.circular(20.r),
       ),
 
@@ -214,7 +230,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
         decoration: const InputDecoration(
           border: InputBorder.none,
+
           hintText: 'Search surah...',
+
           prefixIcon: Icon(Icons.search),
         ),
       ),
@@ -256,7 +274,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
             style: TextStyle(
               color: Colors.white,
+
               fontSize: 32.sp,
+
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -264,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 8.h),
 
           Text(
-            'Ayah No: $lastReadAyah',
+            'Ayah: $lastReadAyah  |  Page: $lastReadPage',
 
             style: TextStyle(color: Colors.white70),
           ),

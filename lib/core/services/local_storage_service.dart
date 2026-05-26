@@ -10,17 +10,22 @@ class LocalStorageService {
   static Future<void> saveLastRead({
     required String surahName,
     required int ayahNumber,
+    required int pageNumber,
   }) async {
     await prefs.setString('last_surah', surahName);
 
     await prefs.setInt('last_ayah', ayahNumber);
+
+    await prefs.setInt('last_page', pageNumber);
   }
 
-  static Future<Map<String, dynamic>> getLastRead() async {
-    final surahName = prefs.getString('last_surah') ?? 'Al-Fatihah';
+  static Map<String, dynamic> getLastRead() {
+    return {
+      'surahName': prefs.getString('last_surah') ?? 'Al-Fatihah',
 
-    final ayahNumber = prefs.getInt('last_ayah') ?? 1;
+      'ayahNumber': prefs.getInt('last_ayah') ?? 1,
 
-    return {'surahName': surahName, 'ayahNumber': ayahNumber};
+      'pageNumber': prefs.getInt('last_page') ?? 1,
+    };
   }
 }
