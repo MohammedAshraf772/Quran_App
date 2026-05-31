@@ -32,21 +32,32 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    loadLastRead();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadLastRead();
+    });
 
     context.read<QuranCubit>().getSurahs();
   }
 
   Future<void> loadLastRead() async {
-    final data = await LocalStorageService.getLastRead();
+    final data = LocalStorageService.getLastRead();
+
+    if (!mounted) return;
 
     setState(() {
-      lastReadSurah = data['surahName'];
+      lastReadSurah = data['surahName'] ?? 'Al-Fatihah';
 
-      lastReadAyah = data['ayahNumber'];
+      lastReadAyah = data['ayahNumber'] ?? 1;
 
-      lastReadPage = data['pageNumber'];
+      lastReadPage = data['pageNumber'] ?? 1;
     });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -106,12 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
               Text(
                 'Surah',
-
                 style: TextStyle(
                   color: AppColors.primary,
-
                   fontSize: 22.sp,
-
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -190,9 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               style: TextStyle(
                 color: AppColors.textPrimary,
-
                 fontSize: 34.sp,
-
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -265,11 +271,11 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.menu_book, color: Colors.white70),
+              const Icon(Icons.menu_book, color: Colors.white70),
 
               SizedBox(width: 8.w),
 
-              Text('Last Read', style: TextStyle(color: Colors.white70)),
+              const Text('Last Read', style: TextStyle(color: Colors.white70)),
             ],
           ),
 
@@ -281,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               color: Colors.white,
 
-              fontSize: 32.sp,
+              fontSize: 28.sp,
 
               fontWeight: FontWeight.bold,
             ),
@@ -290,9 +296,9 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 8.h),
 
           Text(
-            'Ayah: $lastReadAyah   •   Page: $lastReadPage',
+            'Ayah: $lastReadAyah  •  Page: $lastReadPage',
 
-            style: TextStyle(color: Colors.white70),
+            style: const TextStyle(color: Colors.white70),
           ),
         ],
       ),
