@@ -24,13 +24,13 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
   bool isLoading = true;
 
-  late PageController pageController;
+  final ScrollController scrollController = ScrollController();
+
+  int currentPage = 1;
 
   @override
   void initState() {
     super.initState();
-
-    pageController = PageController();
 
     getSurahDetails();
   }
@@ -41,9 +41,31 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
       final result = await repository.getSurahDetails(widget.surah.number);
 
-      setState(() {
-        ayahs = result;
+      ayahs = result;
 
+      if (ayahs.isNotEmpty) {
+        currentPage = ayahs.first.page;
+      }
+
+      scrollController.addListener(() {
+        if (ayahs.isEmpty) return;
+
+        final index = (scrollController.offset / 250).floor();
+
+        if (index >= 0 && index < ayahs.length) {
+          LocalStorageService.saveLastRead(
+            surahName: widget.surah.englishName,
+            ayahNumber: ayahs[index].number,
+            pageNumber: ayahs[index].page,
+          );
+
+          setState(() {
+            currentPage = ayahs[index].page;
+          });
+        }
+      });
+
+      setState(() {
         isLoading = false;
       });
     } catch (e) {
@@ -53,20 +75,9 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     }
   }
 
-  Future<void> saveLastRead({
-    required int ayahNumber,
-    required int pageNumber,
-  }) async {
-    await LocalStorageService.saveLastRead(
-      surahName: widget.surah.name,
-      ayahNumber: ayahNumber,
-      pageNumber: pageNumber,
-    );
-  }
-
   @override
   void dispose() {
-    pageController.dispose();
+    scrollController.dispose();
 
     super.dispose();
   }
@@ -74,7 +85,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xfff8f5ec),
 
       body:
           isLoading
@@ -85,131 +96,37 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                     topHeader(),
 
                     Expanded(
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          final currentPage = pageController.page?.round() ?? 0;
+                      child: ListView.builder(
+                        controller: scrollController,
 
-                          if (ayahs.isNotEmpty) {
-                            saveLastRead(
-                              ayahNumber: ayahs[currentPage].number,
-
-                              pageNumber: currentPage + 1,
-                            );
-                          }
-
-                          return false;
-                        },
-
-                        child: PageView.builder(
-                          controller: pageController,
-
-                          reverse: true,
-
-                          itemCount: ayahs.length,
-
-                          itemBuilder: (context, index) {
-                            final ayah = ayahs[index];
-
-                            final pageNumber = index + 1;
-
-                            return Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 20.w,
-
-                                vertical: 20.h,
-                              ),
-
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xfff8f5ec),
-
-                                  borderRadius: BorderRadius.circular(24.r),
-                                ),
-
-                                child: Column(
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(24.w),
-
-                                        child: SingleChildScrollView(
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                widget.surah.name,
-
-                                                style: TextStyle(
-                                                  fontSize: 32.sp,
-
-                                                  fontWeight: FontWeight.bold,
-
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-
-                                              SizedBox(height: 24.h),
-
-                                              Text(
-                                                ayah.text,
-
-                                                textAlign: TextAlign.center,
-
-                                                textDirection:
-                                                    TextDirection.rtl,
-
-                                                style: TextStyle(
-                                                  fontSize: 30.sp,
-
-                                                  height: 2.4,
-
-                                                  color: Colors.black87,
-
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    Padding(
-                                      padding: EdgeInsets.only(bottom: 24.h),
-
-                                      child: Container(
-                                        width: 46.w,
-
-                                        height: 46.w,
-
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: AppColors.primary,
-                                          ),
-
-                                          shape: BoxShape.circle,
-                                        ),
-
-                                        child: Center(
-                                          child: Text(
-                                            pageNumber.toString(),
-
-                                            style: TextStyle(
-                                              fontSize: 16.sp,
-
-                                              fontWeight: FontWeight.bold,
-
-                                              color: AppColors.primary,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 20.h,
                         ),
+
+                        itemCount: ayahs.length,
+
+                        itemBuilder: (context, index) {
+                          final ayah = ayahs[index];
+
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 18.h),
+
+                            child: Text(
+                              '${ayah.text} ﴿${ayah.number}﴾',
+
+                              textAlign: TextAlign.center,
+
+                              textDirection: TextDirection.rtl,
+
+                              style: TextStyle(
+                                fontSize: 28.sp,
+                                height: 2.2,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -226,7 +143,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
         top: 20.h,
         left: 24.w,
         right: 24.w,
-        bottom: 30.h,
+        bottom: 20.h,
       ),
 
       decoration: const BoxDecoration(
@@ -239,24 +156,20 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
         children: [
           Row(
             children: [
-              GestureDetector(
-                onTap: () {
+              IconButton(
+                onPressed: () {
                   Navigator.pop(context);
                 },
-
-                child: const Icon(Icons.arrow_back, color: Colors.white),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ],
           ),
 
-          SizedBox(height: 30.h),
-
           Text(
             widget.surah.name,
-
             style: TextStyle(
               color: Colors.white,
-              fontSize: 42.sp,
+              fontSize: 32.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -265,26 +178,14 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
           Text(
             widget.surah.englishName,
-
-            style: TextStyle(color: Colors.white70, fontSize: 22.sp),
+            style: TextStyle(color: Colors.white70, fontSize: 18.sp),
           ),
 
-          SizedBox(height: 22.h),
+          SizedBox(height: 15.h),
 
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
-
-            decoration: BoxDecoration(
-              color: Colors.white24,
-
-              borderRadius: BorderRadius.circular(30.r),
-            ),
-
-            child: Text(
-              '${widget.surah.ayahs} Ayahs',
-
-              style: TextStyle(color: Colors.white, fontSize: 18.sp),
-            ),
+          Text(
+            "Page $currentPage",
+            style: TextStyle(color: Colors.white, fontSize: 18.sp),
           ),
         ],
       ),
