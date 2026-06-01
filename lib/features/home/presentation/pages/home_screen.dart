@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran_app/features/profail/presentation/pages/profile_screen.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_storage_service.dart';
@@ -45,11 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
 
     setState(() {
-      lastReadSurah = data['surahName'] ?? 'Al-Fatihah';
-
-      lastReadAyah = data['ayahNumber'] ?? 1;
-
-      lastReadPage = data['pageNumber'] ?? 1;
+      lastReadSurah = data['surahName'];
+      lastReadAyah = data['ayahNumber'];
+      lastReadPage = data['pageNumber'];
     });
   }
 
@@ -192,16 +191,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             SizedBox(height: 8.h),
-
-            Text(
-              'Mohamed',
-
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 34.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
           ],
         ),
 
@@ -308,6 +297,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget navItem(IconData icon, int index) {
     return GestureDetector(
       onTap: () {
+        if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileScreen()),
+          );
+
+          return;
+        }
+
         setState(() {
           currentIndex = index;
         });
@@ -315,9 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       child: Icon(
         icon,
-
         color: currentIndex == index ? Colors.white : Colors.white70,
-
         size: 28.sp,
       ),
     );

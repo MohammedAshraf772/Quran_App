@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app/app_router.dart';
+
 import 'core/network/api_service.dart';
 import 'core/services/local_storage_service.dart';
+
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_cubit.dart';
 
 import 'features/quran/data/datasource/quran_remote_datasource.dart';
 import 'features/quran/data/repositories/quran_repository.dart';
@@ -38,12 +41,24 @@ class QuranApp extends StatelessWidget {
                     QuranRepository(QuranRemoteDataSource(ApiService())),
                   )..getSurahs(),
             ),
+
+            BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
           ],
 
-          child: MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            routerConfig: AppRouter.router,
+          child: BlocBuilder<ThemeCubit, bool>(
+            builder: (context, isDark) {
+              return MaterialApp.router(
+                debugShowCheckedModeBanner: false,
+
+                theme: AppTheme.lightTheme,
+
+                darkTheme: AppTheme.darkTheme,
+
+                themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+
+                routerConfig: AppRouter.router,
+              );
+            },
           ),
         );
       },
