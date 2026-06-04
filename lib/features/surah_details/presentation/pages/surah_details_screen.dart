@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/services/local_storage_service.dart';
 
@@ -32,38 +32,20 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   void initState() {
     super.initState();
 
-    getSurahDetails();
+    loadSurah();
   }
 
-  Future<void> getSurahDetails() async {
+  Future<void> loadSurah() async {
     try {
       final repository = QuranRepository(QuranRemoteDataSource(ApiService()));
 
-      final result = await repository.getSurahDetails(widget.surah.number);
-
-      ayahs = result;
+      ayahs = await repository.getSurahDetails(widget.surah.number);
 
       if (ayahs.isNotEmpty) {
         currentPage = ayahs.first.page;
       }
 
-      scrollController.addListener(() {
-        if (ayahs.isEmpty) return;
-
-        final index = (scrollController.offset / 250).floor();
-
-        if (index >= 0 && index < ayahs.length) {
-          LocalStorageService.saveLastRead(
-            surahName: widget.surah.englishName,
-            ayahNumber: ayahs[index].number,
-            pageNumber: ayahs[index].page,
-          );
-
-          setState(() {
-            currentPage = ayahs[index].page;
-          });
-        }
-      });
+      scrollController.addListener(saveReadingProgress);
 
       setState(() {
         isLoading = false;
@@ -75,8 +57,40 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     }
   }
 
+  Future<void> saveReadingProgress() async {
+    if (ayahs.isEmpty) return;
+
+    if (!scrollController.hasClients) return;
+
+    int index = (scrollController.offset / 120).floor();
+
+    if (index < 0) {
+      index = 0;
+    }
+
+    if (index >= ayahs.length) {
+      index = ayahs.length - 1;
+    }
+
+    await LocalStorageService.saveLastRead(
+      surahName: widget.surah.name,
+      ayahNumber: ayahs[index].number,
+      pageNumber: ayahs[index].page,
+    );
+
+    if (mounted) {
+      setState(() {
+        currentPage = ayahs[index].page;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    if (scrollController.hasClients) {
+      saveReadingProgress();
+    }
+
     scrollController.dispose();
 
     super.dispose();
@@ -93,40 +107,58 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
               : SafeArea(
                 child: Column(
                   children: [
-                    topHeader(),
+                    buildHeader(),
 
                     Expanded(
-                      child: ListView.builder(
+                      child: ListView(
                         controller: scrollController,
 
                         padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
+                          horizontal: 18.w,
                           vertical: 20.h,
                         ),
 
-                        itemCount: ayahs.length,
+                        children: [
+                          Text(
+                            ayahs
+                                .map((e) => '${e.text} ﴿${e.number}﴾')
+                                .join(' '),
 
-                        itemBuilder: (context, index) {
-                          final ayah = ayahs[index];
+                            textDirection: TextDirection.rtl,
 
-                          return Container(
-                            margin: EdgeInsets.only(bottom: 18.h),
+                            textAlign: TextAlign.justify,
 
-                            child: Text(
-                              '${ayah.text} ﴿${ayah.number}﴾',
+                            style: TextStyle(
+                              fontSize: 28.sp,
 
-                              textAlign: TextAlign.center,
+                              height: 2.3,
 
-                              textDirection: TextDirection.rtl,
-
-                              style: TextStyle(
-                                fontSize: 28.sp,
-                                height: 2.2,
-                                color: Colors.black87,
-                              ),
+                              color: Colors.black87,
                             ),
-                          );
-                        },
+                          ),
+
+                          SizedBox(height: 40.h),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      width: double.infinity,
+
+                      padding: EdgeInsets.symmetric(vertical: 15.h),
+
+                      color: const Color(0xfff8f5ec),
+
+                      child: Text(
+                        currentPage.toString(),
+
+                        textAlign: TextAlign.center,
+
+                        style: TextStyle(
+                          fontSize: 18.sp,
+
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -135,16 +167,11 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     );
   }
 
-  Widget topHeader() {
+  Widget buildHeader() {
     return Container(
       width: double.infinity,
 
-      padding: EdgeInsets.only(
-        top: 20.h,
-        left: 24.w,
-        right: 24.w,
-        bottom: 20.h,
-      ),
+      padding: EdgeInsets.only(top: 20.h, bottom: 20.h),
 
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -160,6 +187,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
+
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ],
@@ -167,9 +195,12 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
           Text(
             widget.surah.name,
+
             style: TextStyle(
               color: Colors.white,
-              fontSize: 32.sp,
+
+              fontSize: 30.sp,
+
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -178,14 +209,8 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
           Text(
             widget.surah.englishName,
+
             style: TextStyle(color: Colors.white70, fontSize: 18.sp),
-          ),
-
-          SizedBox(height: 15.h),
-
-          Text(
-            "Page $currentPage",
-            style: TextStyle(color: Colors.white, fontSize: 18.sp),
           ),
         ],
       ),
