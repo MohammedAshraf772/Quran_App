@@ -28,4 +28,12 @@ class LocalStorageService {
       'pageNumber': prefs.getInt('last_page') ?? 1,
     };
   }
+
+  static Future<void> saveLastSurahNumber(int number) async {
+    await prefs.setInt('last_surah_number', number);
+  }
+
+  static int getLastSurahNumber() {
+    return prefs.getInt('last_surah_number') ?? 1;
+  }
 }
