@@ -6,10 +6,15 @@ import '../../../quran/data/models/surah_model.dart';
 
 class SurahTile extends StatelessWidget {
   final SurahModel surah;
-
+  final List<SurahModel> allSurahs;
   final VoidCallback onReturn;
 
-  const SurahTile({super.key, required this.surah, required this.onReturn});
+  const SurahTile({
+    super.key,
+    required this.surah,
+    required this.allSurahs,
+    required this.onReturn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,31 +22,27 @@ class SurahTile extends StatelessWidget {
       onTap: () async {
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => SurahDetailsScreen(surah: surah)),
+          MaterialPageRoute(
+            builder:
+                (_) => SurahDetailsScreen(surah: surah, allSurahs: allSurahs),
+          ),
         );
 
         onReturn();
       },
-
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
-
         padding: const EdgeInsets.all(16),
-
         decoration: BoxDecoration(
           color: AppColors.cardColor,
-
           borderRadius: BorderRadius.circular(18),
         ),
-
         child: Row(
           children: [
             CircleAvatar(
               backgroundColor: AppColors.primary,
-
               child: Text(
                 surah.number.toString(),
-
                 style: const TextStyle(color: Colors.white),
               ),
             ),
@@ -51,11 +52,9 @@ class SurahTile extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
                   Text(
                     surah.englishName,
-
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -67,7 +66,6 @@ class SurahTile extends StatelessWidget {
 
                   Text(
                     "${surah.ayahs} Ayahs",
-
                     style: const TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -76,7 +74,6 @@ class SurahTile extends StatelessWidget {
 
             Text(
               surah.name,
-
               style: const TextStyle(color: Colors.white, fontSize: 24),
             ),
           ],

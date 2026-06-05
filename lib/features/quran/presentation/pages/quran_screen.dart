@@ -78,7 +78,11 @@ class QuranScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final SurahModel surah = state.surahs[index];
 
-                        return SurahTile(surah: surah, onReturn: () {});
+                        return SurahTile(
+                          surah: surah,
+                          allSurahs: state.surahs,
+                          onReturn: () {},
+                        );
                       },
                     );
                   }

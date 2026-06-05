@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemBuilder: (context, index) {
                           return SurahTile(
                             surah: surahs[index],
-
+                            allSurahs: state.surahs,
                             onReturn: () async {
                               await loadLastRead();
                             },
