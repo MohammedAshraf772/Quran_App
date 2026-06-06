@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran_app/features/profail/presentation/pages/profile_screen.dart';
+import 'package:quran_app/features/surah_details/presentation/pages/surah_details_screen.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_storage_service.dart';
@@ -23,11 +24,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final TextEditingController searchController = TextEditingController();
 
-  String lastReadSurah = 'Al-Fatihah';
+  String lastReadSurah = '';
+
+  String lastReadAyahText = '';
 
   int lastReadAyah = 1;
 
   int lastReadPage = 1;
+
+  int lastReadSurahNumber = 1;
 
   @override
   void initState() {
@@ -47,8 +52,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       lastReadSurah = data['surahName'];
+
       lastReadAyah = data['ayahNumber'];
+
       lastReadPage = data['pageNumber'];
+
+      lastReadAyahText = data['ayahText'];
+
+      lastReadSurahNumber = data['surahNumber'];
     });
   }
 
@@ -241,55 +252,95 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget lastReadCard() {
-    return Container(
-      width: double.infinity,
+    return GestureDetector(
+      onTap: () {
+        final state = context.read<QuranCubit>().state;
 
-      padding: EdgeInsets.all(24.w),
+        if (state is! QuranLoaded) return;
 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30.r),
+        final surah = state.surahs.firstWhere(
+          (s) => s.number == lastReadSurahNumber,
+        );
 
-        gradient: const LinearGradient(
-          colors: [Color(0xFF015248), Color(0xFF0A7B65)],
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) =>
+                    SurahDetailsScreen(surah: surah, allSurahs: state.surahs),
+          ),
+        );
+      },
+
+      child: Container(
+        width: double.infinity,
+
+        padding: EdgeInsets.all(24.w),
+
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30.r),
+
+          gradient: const LinearGradient(
+            colors: [Color(0xFF015248), Color(0xFF0A7B65)],
+          ),
         ),
-      ),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.menu_book, color: Colors.white70),
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.menu_book, color: Colors.white70),
 
-              SizedBox(width: 8.w),
+                SizedBox(width: 8.w),
 
-              const Text('Last Read', style: TextStyle(color: Colors.white70)),
-            ],
-          ),
-
-          SizedBox(height: 24.h),
-
-          Text(
-            lastReadSurah,
-
-            style: TextStyle(
-              color: Colors.white,
-
-              fontSize: 28.sp,
-
-              fontWeight: FontWeight.bold,
+                const Text(
+                  'Last Read',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
             ),
-          ),
 
-          SizedBox(height: 8.h),
+            SizedBox(height: 20.h),
 
-          Text(
-            'Ayah: $lastReadAyah  •  Page: $lastReadPage',
+            Text(
+              lastReadSurah,
 
-            style: const TextStyle(color: Colors.white70),
-          ),
-        ],
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            SizedBox(height: 10.h),
+
+            Text(
+              'Ayah $lastReadAyah',
+
+              style: const TextStyle(color: Colors.white70),
+            ),
+
+            SizedBox(height: 10.h),
+
+            Text(
+              lastReadAyahText,
+
+              maxLines: 2,
+
+              overflow: TextOverflow.ellipsis,
+
+              textDirection: TextDirection.rtl,
+
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                height: 1.8,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

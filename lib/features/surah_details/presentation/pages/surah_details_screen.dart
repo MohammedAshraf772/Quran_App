@@ -30,9 +30,11 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
   late PageController pageController;
 
-  int currentPage = 0;
+  int currentPageIndex = 0;
 
   List<List<AyahModel>> pages = [];
+
+  List<int> pageNumbers = [];
 
   @override
   void initState() {
@@ -59,15 +61,17 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
       pages = grouped.values.toList();
 
+      pageNumbers = grouped.keys.toList();
+
       final lastRead = LocalStorageService.getLastRead();
 
       if (lastRead['surahName'] == widget.surah.englishName) {
         final savedPage = lastRead['pageNumber'];
 
-        final index = grouped.keys.toList().indexOf(savedPage);
+        final savedIndex = pageNumbers.indexOf(savedPage);
 
-        if (index != -1) {
-          currentPage = index;
+        if (savedIndex != -1) {
+          currentPageIndex = savedIndex;
         }
       }
 
@@ -77,7 +81,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (pageController.hasClients) {
-          pageController.jumpToPage(currentPage);
+          pageController.jumpToPage(currentPageIndex);
         }
       });
     } catch (e) {
@@ -87,7 +91,23 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     }
   }
 
-  void goToNextSurah() {
+  Future<void> saveCurrentPage(int index) async {
+    final firstAyah = pages[index].first;
+
+    await LocalStorageService.saveLastRead(
+      surahNumber: widget.surah.number,
+
+      surahName: widget.surah.englishName,
+
+      ayahNumber: firstAyah.number,
+
+      pageNumber: firstAyah.page,
+
+      ayahText: firstAyah.text,
+    );
+  }
+
+  Future<void> goToNextSurah() async {
     final currentIndex = widget.allSurahs.indexWhere(
       (s) => s.number == widget.surah.number,
     );
@@ -97,6 +117,16 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     }
 
     final nextSurah = widget.allSurahs[currentIndex + 1];
+
+    await LocalStorageService.saveLastRead(
+      surahName: nextSurah.englishName,
+      ayahNumber: 1,
+      pageNumber: 1,
+      surahNumber: 1,
+      ayahText: '',
+    );
+
+    if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
@@ -134,66 +164,63 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                       child: PageView.builder(
                         controller: pageController,
 
-                        onPageChanged: (index) {
-                          currentPage = index;
+                        itemCount: pages.length + 1,
 
-                          final firstAyah = pages[index].first;
+                        onPageChanged: (index) async {
+                          if (index < pages.length) {
+                            currentPageIndex = index;
 
-                          LocalStorageService.saveLastRead(
-                            surahName: widget.surah.englishName,
+                            await saveCurrentPage(index);
 
-                            ayahNumber: firstAyah.number,
-
-                            pageNumber: firstAyah.page,
-                          );
-
-                          setState(() {});
-
-                          if (index == pages.length - 1) {
-                            Future.delayed(
-                              const Duration(milliseconds: 500),
-                              () {
-                                if (mounted) {
-                                  goToNextSurah();
-                                }
-                              },
-                            );
+                            setState(() {});
+                          } else {
+                            goToNextSurah();
                           }
                         },
 
-                        itemCount: pages.length,
-
                         itemBuilder: (context, index) {
-                          return SingleChildScrollView(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 24.w,
-                              vertical: 20.h,
-                            ),
+                          if (index == pages.length) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          return Padding(
+                            padding: EdgeInsets.all(16.w),
 
                             child: Container(
-                              padding: EdgeInsets.all(22.w),
-
                               decoration: BoxDecoration(
                                 color: Colors.white,
 
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(24),
+
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 10,
+                                  ),
+                                ],
                               ),
 
-                              child: Text(
-                                pages[index]
-                                    .map((e) => '${e.text} ﴿${e.number}﴾')
-                                    .join(' '),
+                              padding: EdgeInsets.all(24.w),
 
-                                textAlign: TextAlign.center,
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  pages[index]
+                                      .map((e) => '${e.text} ﴿${e.number}﴾')
+                                      .join(' '),
 
-                                textDirection: TextDirection.rtl,
+                                  textAlign: TextAlign.center,
 
-                                style: TextStyle(
-                                  fontSize: 30.sp,
+                                  textDirection: TextDirection.rtl,
 
-                                  height: 2.2,
+                                  style: TextStyle(
+                                    fontSize: 30.sp,
 
-                                  color: Colors.black87,
+                                    height: 2.4,
+
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ),
                             ),
@@ -206,10 +233,12 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                       margin: const EdgeInsets.only(bottom: 20),
 
                       child: Text(
-                        "${currentPage + 1}",
+                        pageNumbers.isEmpty
+                            ? "1"
+                            : pageNumbers[currentPageIndex].toString(),
 
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 22,
 
                           fontWeight: FontWeight.bold,
                         ),
@@ -262,7 +291,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
             ),
           ),
 
-          SizedBox(height: 10.h),
+          SizedBox(height: 8.h),
 
           Text(
             widget.surah.englishName,
