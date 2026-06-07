@@ -7,6 +7,8 @@ class LocalStorageService {
     prefs = await SharedPreferences.getInstance();
   }
 
+  // ================= LAST READ =================
+
   static Future<void> saveLastRead({
     required int surahNumber,
     required String surahName,
@@ -16,9 +18,9 @@ class LocalStorageService {
   }) async {
     await prefs.setInt('last_surah_number', surahNumber);
 
-    await prefs.setString('last_ayah_text', ayahText);
+    await prefs.setString('last_surah_name', surahName);
 
-    await prefs.setInt('last_surah_number', surahNumber);
+    await prefs.setInt('last_ayah_number', ayahNumber);
 
     await prefs.setInt('last_page_number', pageNumber);
 
@@ -37,5 +39,25 @@ class LocalStorageService {
 
       'ayahText': prefs.getString('last_ayah_text') ?? '',
     };
+  }
+
+  // ================= THEME =================
+
+  static Future<void> saveTheme(bool isDark) async {
+    await prefs.setBool('is_dark_mode', isDark);
+  }
+
+  static bool getTheme() {
+    return prefs.getBool('is_dark_mode') ?? false;
+  }
+
+  // ================= LANGUAGE =================
+
+  static Future<void> saveLanguage(String code) async {
+    await prefs.setString('app_language', code);
+  }
+
+  static String getLanguage() {
+    return prefs.getString('app_language') ?? 'en';
   }
 }

@@ -1,9 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ThemeCubit extends Cubit<bool> {
-  ThemeCubit() : super(false);
+import '../services/local_storage_service.dart';
 
-  void toggleTheme() {
-    emit(!state);
+class ThemeCubit extends Cubit<bool> {
+  ThemeCubit() : super(LocalStorageService.getTheme());
+
+  Future<void> toggleTheme() async {
+    final newTheme = !state;
+
+    emit(newTheme);
+
+    await LocalStorageService.saveTheme(newTheme);
   }
 }
