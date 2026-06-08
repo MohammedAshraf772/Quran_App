@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -75,8 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
 
-      backgroundColor: AppColors.background,
-
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       bottomNavigationBar: Container(
         margin: EdgeInsets.only(left: 24.w, right: 24.w, bottom: 24.h),
 
@@ -126,9 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 30.h),
 
               Text(
-                'Surah',
+                'surah'.tr(),
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
                   fontSize: 22.sp,
                   fontWeight: FontWeight.bold,
                 ),
@@ -196,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           children: [
             Text(
-              'Assalamualaikum',
+              'assalamualaikum'.tr(),
 
               style: TextStyle(color: AppColors.textSecondary, fontSize: 18.sp),
             ),
@@ -210,8 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 56.w,
 
           decoration: BoxDecoration(
-            color: Colors.white,
-
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(18.r),
           ),
 
@@ -228,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.symmetric(horizontal: 18.w),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
 
         borderRadius: BorderRadius.circular(20.r),
       ),
@@ -240,10 +239,9 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {});
         },
 
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           border: InputBorder.none,
-
-          hintText: 'Search surah...',
+          hintText: 'search_surah'.tr(),
 
           prefixIcon: Icon(Icons.search),
         ),
@@ -317,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: 10.h),
 
             Text(
-              'Ayah $lastReadAyah',
+              '${'ayah'.tr()} $lastReadAyah',
 
               style: const TextStyle(color: Colors.white70),
             ),
@@ -331,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               overflow: TextOverflow.ellipsis,
 
-              textDirection: TextDirection.rtl,
+              textDirection: Directionality.of(context),
 
               style: TextStyle(
                 color: Colors.white,

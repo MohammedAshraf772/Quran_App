@@ -6,5 +6,12 @@
     "about_app": "About App",
     "rate_app": "Rate App",
     "share_app": "Share App",
-    "privacy_policy": "Privacy Policy"
+    "privacy_policy": "Privacy Policy",
+    "page": "Page",
+    "surah": "Surahs",
+    "last_read": "Last Read",
+    "search_surah": "Search Surah...",
+    "assalamualaikum": "Assalamualaikum",
+    "ayah": "Ayah",
+    "select_language": "Select Language"
 }

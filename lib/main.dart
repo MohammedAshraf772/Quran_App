@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran_app/core/language/language_cubit.dart';
 
 import 'app/app_router.dart';
 
@@ -17,9 +19,23 @@ import 'features/quran/presentation/cubit/quran_cubit.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await EasyLocalization.ensureInitialized();
+
   await LocalStorageService.init();
 
-  runApp(const QuranApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ar'),
+        Locale('fr'),
+        Locale('de'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: const QuranApp(),
+    ),
+  );
 }
 
 class QuranApp extends StatelessWidget {
@@ -29,34 +45,49 @@ class QuranApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
-      minTextAdapt: true,
-      splitScreenMode: true,
 
-      builder: (context, child) {
+      builder: (_, __) {
         return MultiBlocProvider(
           providers: [
-            BlocProvider<QuranCubit>(
+            BlocProvider(
               create:
                   (_) => QuranCubit(
                     QuranRepository(QuranRemoteDataSource(ApiService())),
                   )..getSurahs(),
             ),
 
-            BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+            BlocProvider(create: (_) => ThemeCubit()),
+
+            BlocProvider(create: (_) => LanguageCubit()),
           ],
 
           child: BlocBuilder<ThemeCubit, bool>(
             builder: (context, isDark) {
-              return MaterialApp.router(
-                debugShowCheckedModeBanner: false,
+              return BlocListener<LanguageCubit, Locale>(
+                listener: (context, locale) async {
+                  await context.setLocale(locale);
+                },
+                child: BlocBuilder<ThemeCubit, bool>(
+                  builder: (context, isDark) {
+                    return MaterialApp.router(
+                      debugShowCheckedModeBanner: false,
 
-                theme: AppTheme.lightTheme,
+                      locale: context.locale,
 
-                darkTheme: AppTheme.darkTheme,
+                      supportedLocales: context.supportedLocales,
 
-                themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+                      localizationsDelegates: context.localizationDelegates,
 
-                routerConfig: AppRouter.router,
+                      theme: AppTheme.lightTheme,
+
+                      darkTheme: AppTheme.darkTheme,
+
+                      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+
+                      routerConfig: AppRouter.router,
+                    );
+                  },
+                ),
               );
             },
           ),

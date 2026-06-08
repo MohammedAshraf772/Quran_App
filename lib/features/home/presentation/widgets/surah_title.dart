@@ -40,7 +40,7 @@ class SurahTile extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: Text(
                 surah.number.toString(),
                 style: const TextStyle(color: Colors.white),
@@ -55,8 +55,8 @@ class SurahTile extends StatelessWidget {
                 children: [
                   Text(
                     surah.englishName,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
@@ -66,7 +66,9 @@ class SurahTile extends StatelessWidget {
 
                   Text(
                     "${surah.ayahs} Ayahs",
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
                   ),
                 ],
               ),
@@ -74,7 +76,10 @@ class SurahTile extends StatelessWidget {
 
             Text(
               surah.name,
-              style: const TextStyle(color: Colors.white, fontSize: 24),
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: 24,
+              ),
             ),
           ],
         ),

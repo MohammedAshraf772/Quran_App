@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -150,8 +151,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff8f5ec),
-
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -190,7 +190,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).cardColor,
 
                                 borderRadius: BorderRadius.circular(24),
 
@@ -212,14 +212,17 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
                                   textAlign: TextAlign.center,
 
-                                  textDirection: TextDirection.rtl,
+                                  textDirection: Directionality.of(context),
 
                                   style: TextStyle(
                                     fontSize: 30.sp,
 
                                     height: 2.4,
 
-                                    color: Colors.black87,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color,
                                   ),
                                 ),
                               ),
@@ -233,14 +236,11 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                       margin: const EdgeInsets.only(bottom: 20),
 
                       child: Text(
-                        pageNumbers.isEmpty
-                            ? "1"
-                            : pageNumbers[currentPageIndex].toString(),
-
-                        style: const TextStyle(
+                        '${'page'.tr()} ${pageNumbers[currentPageIndex]}',
+                        style: TextStyle(
                           fontSize: 22,
-
                           fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       ),
                     ),

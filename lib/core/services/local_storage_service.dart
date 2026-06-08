@@ -53,11 +53,11 @@ class LocalStorageService {
 
   // ================= LANGUAGE =================
 
-  static Future<void> saveLanguage(String code) async {
-    await prefs.setString('app_language', code);
+  static Future<void> saveLanguage(String languageCode) async {
+    await prefs.setString('language_code', languageCode);
   }
 
   static String getLanguage() {
-    return prefs.getString('app_language') ?? 'en';
+    return prefs.getString('language_code') ?? 'en';
   }
 }

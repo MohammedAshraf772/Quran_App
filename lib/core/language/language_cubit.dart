@@ -7,8 +7,8 @@ class LanguageCubit extends Cubit<Locale> {
   LanguageCubit() : super(Locale(LocalStorageService.getLanguage()));
 
   Future<void> changeLanguage(String code) async {
-    emit(Locale(code));
-
     await LocalStorageService.saveLanguage(code);
+
+    emit(Locale(code));
   }
 }
