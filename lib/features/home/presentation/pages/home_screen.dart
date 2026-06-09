@@ -148,13 +148,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     if (state is QuranLoaded) {
+                      final query = searchController.text.trim().toLowerCase();
+
+                      searchController.text.trim().toLowerCase();
+
                       final surahs =
                           state.surahs.where((surah) {
-                            return surah.englishName.toLowerCase().contains(
-                                  searchController.text.toLowerCase(),
+                            return surah.name.toLowerCase().contains(query) ||
+                                surah.englishName.toLowerCase().contains(
+                                  query,
                                 ) ||
-                                surah.name.contains(searchController.text);
+                                surah.englishNameTranslation
+                                    .toLowerCase()
+                                    .contains(query) ||
+                                surah.number.toString().contains(query);
                           }).toList();
+
+                      if (surahs.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No Surah Found',
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                        );
+                      }
 
                       return ListView.separated(
                         padding: EdgeInsets.only(bottom: 20.h),
