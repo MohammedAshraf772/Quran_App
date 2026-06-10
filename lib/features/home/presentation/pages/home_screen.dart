@@ -150,19 +150,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (state is QuranLoaded) {
                       final query = searchController.text.trim().toLowerCase();
 
-                      searchController.text.trim().toLowerCase();
-
                       final surahs =
-                          state.surahs.where((surah) {
-                            return surah.name.toLowerCase().contains(query) ||
-                                surah.englishName.toLowerCase().contains(
-                                  query,
-                                ) ||
-                                surah.englishNameTranslation
-                                    .toLowerCase()
-                                    .contains(query) ||
-                                surah.number.toString().contains(query);
-                          }).toList();
+                          query.isEmpty
+                              ? state.surahs
+                              : state.surahs.where((surah) {
+                                return surah.name.toLowerCase().contains(
+                                      query,
+                                    ) ||
+                                    surah.englishName.toLowerCase().contains(
+                                      query,
+                                    ) ||
+                                    surah.englishNameTranslation
+                                        .toLowerCase()
+                                        .contains(query) ||
+                                    surah.number.toString().contains(query);
+                              }).toList();
 
                       if (surahs.isEmpty) {
                         return Center(
@@ -260,11 +262,32 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {});
         },
 
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+
         decoration: InputDecoration(
           border: InputBorder.none,
+
           hintText: 'search_surah'.tr(),
 
-          prefixIcon: Icon(Icons.search),
+          hintStyle: TextStyle(
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+
+          prefixIcon: Icon(
+            Icons.search,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+
+          suffixIcon:
+              searchController.text.isEmpty
+                  ? null
+                  : IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      searchController.clear();
+                      setState(() {});
+                    },
+                  ),
         ),
       ),
     );

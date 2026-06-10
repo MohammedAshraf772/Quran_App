@@ -1,12 +1,8 @@
 class SurahModel {
   final int number;
-
   final String name;
-
   final String englishName;
-
   final String englishNameTranslation;
-
   final int ayahs;
 
   SurahModel({
@@ -19,15 +15,11 @@ class SurahModel {
 
   factory SurahModel.fromJson(Map<String, dynamic> json) {
     return SurahModel(
-      number: json['number'] ?? 0,
-
-      name: json['name'] ?? '',
-
-      englishName: json['englishName'] ?? '',
-
+      number: json['number'],
+      name: json['name'],
+      englishName: json['englishName'],
       englishNameTranslation: json['englishNameTranslation'] ?? '',
-
-      ayahs: json['numberOfAyahs'] ?? 0,
+      ayahs: json['numberOfAyahs'],
     );
   }
 }
