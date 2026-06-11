@@ -51,7 +51,18 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
       final repository = QuranRepository(QuranRemoteDataSource(ApiService()));
 
       ayahs = await repository.getSurahDetails(widget.surah.number);
-
+      if (ayahs.isNotEmpty) {
+        await LocalStorageService.saveLastRead(
+          surahNumber: widget.surah.number,
+          surahName: widget.surah.englishName,
+          ayahNumber: ayahs.first.number,
+          pageNumber: ayahs.first.page,
+          ayahText: ayahs.first.text,
+        );
+      }
+      debugPrint(
+        'Surah: ${widget.surah.englishName} - Ayahs Count: ${ayahs.length}',
+      );
       final Map<int, List<AyahModel>> grouped = {};
 
       for (final ayah in ayahs) {
@@ -85,7 +96,17 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
           pageController.jumpToPage(currentPageIndex);
         }
       });
-    } catch (e) {
+    } catch (e, s) {
+      debugPrint(
+        'Failed Surah => ${widget.surah.number} | ${widget.surah.englishName}',
+      );
+
+      debugPrint('ERROR => $e');
+
+      debugPrintStack(stackTrace: s);
+
+      if (!mounted) return;
+
       setState(() {
         isLoading = false;
       });
@@ -163,28 +184,22 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                     Expanded(
                       child: PageView.builder(
                         controller: pageController,
-
-                        itemCount: pages.length + 1,
-
+                        itemCount: pages.isEmpty ? 0 : pages.length + 1,
                         onPageChanged: (index) async {
                           if (index < pages.length) {
                             currentPageIndex = index;
-
                             await saveCurrentPage(index);
-
                             setState(() {});
                           } else {
                             goToNextSurah();
                           }
                         },
-
                         itemBuilder: (context, index) {
                           if (index == pages.length) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
-
                           return Padding(
                             padding: EdgeInsets.all(16.w),
 
@@ -236,7 +251,9 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                       margin: const EdgeInsets.only(bottom: 20),
 
                       child: Text(
-                        '${'page'.tr()} ${pageNumbers[currentPageIndex]}',
+                        pageNumbers.isEmpty
+                            ? '${'page'.tr()} 1'
+                            : '${'page'.tr()} ${pageNumbers[currentPageIndex]}',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,

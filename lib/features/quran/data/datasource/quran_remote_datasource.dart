@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:quran_app/core/network/api_service.dart';
 
 import '../models/ayah_model.dart';
@@ -19,8 +20,8 @@ class QuranRemoteDataSource {
   }
 
   Future<List<AyahModel>> getSurahDetails(int number) async {
-    final response = await apiService.dio.get('surah/$number/ar.alafasy');
-
+    final response = await apiService.dio.get('surah/$number/quran-uthmani');
+    debugPrint(response.data.toString());
     final List data = response.data['data']['ayahs'];
 
     return data.map((e) {
