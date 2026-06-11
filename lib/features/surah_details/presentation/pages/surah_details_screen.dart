@@ -180,7 +180,6 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                 child: Column(
                   children: [
                     topHeader(),
-
                     Expanded(
                       child: PageView.builder(
                         controller: pageController,

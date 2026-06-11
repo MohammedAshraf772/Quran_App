@@ -2,15 +2,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran_app/core/network/api_service.dart';
 import 'package:quran_app/features/profail/presentation/pages/profile_screen.dart';
+import 'package:quran_app/features/quran/data/datasource/quran_remote_datasource.dart';
+import 'package:quran_app/features/quran/data/repositories/quran_repository.dart';
 import 'package:quran_app/features/surah_details/presentation/pages/surah_details_screen.dart';
-
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_storage_service.dart';
-
 import '../../../quran/presentation/cubit/quran_cubit.dart';
 import '../../../quran/presentation/cubit/quran_state.dart';
-
 import '../widgets/surah_title.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,17 +22,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int currentIndex = 0;
-
   final TextEditingController searchController = TextEditingController();
-
   String lastReadSurah = '';
-
   String lastReadAyahText = '';
-
   int lastReadAyah = 1;
-
   int lastReadPage = 1;
-
   int lastReadSurahNumber = 1;
 
   @override
@@ -42,6 +36,17 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadLastRead();
     });
+    Future<void> preloadQuran() async {
+      final repository = QuranRepository(QuranRemoteDataSource(ApiService()));
+
+      await repository.getSurahs();
+
+      for (int i = 1; i <= 114; i++) {
+        try {
+          await repository.getSurahDetails(i);
+        } catch (_) {}
+      }
+    }
 
     context.read<QuranCubit>().getSurahs();
   }
@@ -272,12 +277,10 @@ class _HomeScreenState extends State<HomeScreen> {
           hintStyle: TextStyle(
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
-
           prefixIcon: Icon(
             Icons.search,
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
-
           suffixIcon:
               searchController.text.isEmpty
                   ? null
