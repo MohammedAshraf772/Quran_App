@@ -1,7 +1,11 @@
+import 'dart:convert';
+
+import 'package:quran_app/features/bookmark/bookmark_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageService {
   static late SharedPreferences prefs;
+  static const String bookmarksKey = 'bookmarks';
 
   static Future<void> init() async {
     prefs = await SharedPreferences.getInstance();
@@ -59,5 +63,48 @@ class LocalStorageService {
 
   static String getLanguage() {
     return prefs.getString('language_code') ?? 'en';
+  }
+
+  // ================= BOOKMARK =================
+  static Future<void> addBookmark(BookmarkModel bookmark) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final List<String> saved = prefs.getStringList(bookmarksKey) ?? [];
+
+    final exists = saved.any((item) {
+      final data = BookmarkModel.fromJson(jsonDecode(item));
+
+      return data.surahNumber == bookmark.surahNumber;
+    });
+
+    if (exists) return;
+
+    saved.add(jsonEncode(bookmark.toJson()));
+
+    await prefs.setStringList(bookmarksKey, saved);
+  }
+
+  static Future<void> removeBookmark(int surahNumber) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final List<String> saved = prefs.getStringList(bookmarksKey) ?? [];
+
+    saved.removeWhere((item) {
+      final data = BookmarkModel.fromJson(jsonDecode(item));
+
+      return data.surahNumber == surahNumber;
+    });
+
+    await prefs.setStringList(bookmarksKey, saved);
+  }
+
+  static Future<List<BookmarkModel>> getBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final List<String> saved = prefs.getStringList(bookmarksKey) ?? [];
+
+    return saved.map((item) {
+      return BookmarkModel.fromJson(jsonDecode(item));
+    }).toList();
   }
 }

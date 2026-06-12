@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app/features/bookmark/bookmark_model.dart';
 import 'package:quran_app/features/surah_details/presentation/pages/surah_details_screen.dart';
 
+import '../../../../core/services/local_storage_service.dart';
 import '../../../quran/data/models/surah_model.dart';
 
 class SurahTile extends StatelessWidget {
@@ -94,7 +96,29 @@ class SurahTile extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 12),
+            IconButton(
+              onPressed: () async {
+                await LocalStorageService.addBookmark(
+                  BookmarkModel(
+                    surahNumber: surah.number,
+                    surahName: surah.name,
+                    englishName: surah.englishName,
+                  ),
+                );
+
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${surah.name} added to bookmarks')),
+                );
+              },
+              icon: Icon(
+                Icons.bookmark_add,
+                color: isDark ? Colors.white70 : const Color(0xff014D40),
+              ),
+            ),
+
+            const SizedBox(width: 8),
 
             Flexible(
               child: Text(

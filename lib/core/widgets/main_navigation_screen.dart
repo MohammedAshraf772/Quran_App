@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:quran_app/features/favoritation/padeas/favorites_screen.dart';
 import 'package:quran_app/features/profail/presentation/pages/profile_screen.dart';
 import 'package:quran_app/features/quran/presentation/pages/quran_screen.dart';
 
@@ -19,7 +18,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> screens = [
     const HomeScreen(),
     const QuranScreen(),
-    const FavoritesScreen(),
     const ProfileScreen(),
   ];
 

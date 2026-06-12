@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran_app/core/network/api_service.dart';
+import 'package:quran_app/features/bookmark/bookmark_screen.dart';
 import 'package:quran_app/features/profail/presentation/pages/profile_screen.dart';
 import 'package:quran_app/features/quran/data/datasource/quran_remote_datasource.dart';
 import 'package:quran_app/features/quran/data/repositories/quran_repository.dart';
@@ -369,15 +370,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget navItem(IconData icon, int index) {
     return GestureDetector(
       onTap: () {
+        if (index == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const BookmarkScreen()),
+          );
+          return;
+        }
+
         if (index == 2) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const ProfileScreen()),
           );
-
           return;
         }
-
         setState(() {
           currentIndex = index;
         });
