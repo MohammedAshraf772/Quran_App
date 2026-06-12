@@ -36,17 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadLastRead();
     });
-    Future<void> preloadQuran() async {
-      final repository = QuranRepository(QuranRemoteDataSource(ApiService()));
-
-      await repository.getSurahs();
-
-      for (int i = 1; i <= 114; i++) {
-        try {
-          await repository.getSurahDetails(i);
-        } catch (_) {}
-      }
-    }
 
     context.read<QuranCubit>().getSurahs();
   }
@@ -98,12 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
           children: [
             navItem(Icons.home_filled, 0),
-
-            navItem(Icons.search, 1),
-
-            navItem(Icons.bookmark, 2),
-
-            navItem(Icons.person, 3),
+            navItem(Icons.bookmark, 1),
+            navItem(Icons.person, 2),
           ],
         ),
       ),
@@ -119,17 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 18.h),
 
               header(),
-
               SizedBox(height: 28.h),
-
               searchField(),
-
               SizedBox(height: 28.h),
-
-              lastReadCard(),
-
+              if (searchController.text.isEmpty) lastReadCard(),
               SizedBox(height: 30.h),
-
               Text(
                 'surah'.tr(),
                 style: TextStyle(
@@ -153,21 +132,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     if (state is QuranLoaded) {
-                      final query = searchController.text.trim().toLowerCase();
-
+                      final query = normalize(searchController.text.trim());
                       final surahs =
                           query.isEmpty
                               ? state.surahs
                               : state.surahs.where((surah) {
-                                return surah.name.toLowerCase().contains(
-                                      query,
-                                    ) ||
-                                    surah.englishName.toLowerCase().contains(
-                                      query,
-                                    ) ||
-                                    surah.englishNameTranslation
-                                        .toLowerCase()
-                                        .contains(query) ||
+                                return normalize(surah.name).contains(query) ||
+                                    normalize(
+                                      surah.englishName,
+                                    ).contains(query) ||
+                                    normalize(
+                                      surah.englishNameTranslation,
+                                    ).contains(query) ||
                                     surah.number.toString().contains(query);
                               }).toList();
 
@@ -393,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget navItem(IconData icon, int index) {
     return GestureDetector(
       onTap: () {
-        if (index == 3) {
+        if (index == 2) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const ProfileScreen()),
@@ -413,5 +389,16 @@ class _HomeScreenState extends State<HomeScreen> {
         size: 28.sp,
       ),
     );
+  }
+
+  String normalize(String text) {
+    return text
+        .toLowerCase()
+        .replaceAll('أ', 'ا')
+        .replaceAll('إ', 'ا')
+        .replaceAll('آ', 'ا')
+        .replaceAll('ة', 'ه')
+        .replaceAll('ى', 'ي')
+        .replaceAll(RegExp(r'[ًٌٍَُِّْـ]'), '');
   }
 }
