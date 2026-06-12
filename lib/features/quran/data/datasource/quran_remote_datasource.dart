@@ -12,25 +12,21 @@ class QuranRemoteDataSource {
   Future<List<SurahModel>> getSurahs() async {
     final prefs = await SharedPreferences.getInstance();
 
-    try {
-      final response = await apiService.dio.get('surah');
+    final cachedSurahs = prefs.getString('all_surahs');
 
-      final List data = response.data['data'];
-
-      await prefs.setString('cached_surahs', jsonEncode(data));
+    if (cachedSurahs != null) {
+      final List data = jsonDecode(cachedSurahs);
 
       return data.map((e) => SurahModel.fromJson(e)).toList();
-    } catch (e) {
-      final cachedData = prefs.getString('cached_surahs');
-
-      if (cachedData != null) {
-        final List data = jsonDecode(cachedData);
-
-        return data.map((e) => SurahModel.fromJson(e)).toList();
-      }
-
-      rethrow;
     }
+
+    final response = await apiService.dio.get('surah');
+
+    final List data = response.data['data'];
+
+    await prefs.setString('all_surahs', jsonEncode(data));
+
+    return data.map((e) => SurahModel.fromJson(e)).toList();
   }
 
   Future<List<AyahModel>> getSurahDetails(int number) async {
@@ -45,10 +41,10 @@ class QuranRemoteDataSource {
 
       return data.map((e) => AyahModel.fromJson(e)).toList();
     } catch (e) {
-      final cachedData = prefs.getString('surah_$number');
+      final cachedSurah = prefs.getString('surah_$number');
 
-      if (cachedData != null) {
-        final List data = jsonDecode(cachedData);
+      if (cachedSurah != null) {
+        final List data = jsonDecode(cachedSurah);
 
         return data.map((e) => AyahModel.fromJson(e)).toList();
       }

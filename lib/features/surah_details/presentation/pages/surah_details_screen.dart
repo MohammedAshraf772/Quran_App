@@ -77,7 +77,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
       final lastRead = LocalStorageService.getLastRead();
 
-      if (lastRead['surahName'] == widget.surah.englishName) {
+      if (lastRead['surahNumber'] == widget.surah.number) {
         final savedPage = lastRead['pageNumber'];
 
         final savedIndex = pageNumbers.indexOf(savedPage);
