@@ -9,12 +9,14 @@ class SurahTile extends StatelessWidget {
   final SurahModel surah;
   final List<SurahModel> allSurahs;
   final VoidCallback onReturn;
+  final bool autoNextSurah;
 
   const SurahTile({
     super.key,
     required this.surah,
     required this.allSurahs,
     required this.onReturn,
+    this.autoNextSurah = true,
   });
 
   @override
@@ -27,7 +29,11 @@ class SurahTile extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder:
-                (_) => SurahDetailsScreen(surah: surah, allSurahs: allSurahs),
+                (_) => SurahDetailsScreen(
+                  surah: surah,
+                  allSurahs: allSurahs,
+                  autoNextSurah: autoNextSurah,
+                ),
           ),
         );
 

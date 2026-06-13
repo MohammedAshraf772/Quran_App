@@ -13,11 +13,13 @@ import '../../../quran/data/repositories/quran_repository.dart';
 class SurahDetailsScreen extends StatefulWidget {
   final SurahModel surah;
   final List<SurahModel> allSurahs;
+  final bool autoNextSurah;
 
   const SurahDetailsScreen({
     super.key,
     required this.surah,
     required this.allSurahs,
+    this.autoNextSurah = true,
   });
 
   @override
@@ -190,7 +192,9 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                             await saveCurrentPage(index);
                             setState(() {});
                           } else {
-                            goToNextSurah();
+                            if (widget.autoNextSurah) {
+                              goToNextSurah();
+                            }
                           }
                         },
                         itemBuilder: (context, index) {
