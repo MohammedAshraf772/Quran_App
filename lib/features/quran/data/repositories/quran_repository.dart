@@ -15,4 +15,8 @@ class QuranRepository {
   Future<List<AyahModel>> getSurahDetails(int number) async {
     return await remoteDataSource.getSurahDetails(number);
   }
+
+  Future<String> getTafsir(int surahNumber, int ayahNumber) async {
+    return await remoteDataSource.getTafsir(surahNumber, ayahNumber);
+  }
 }

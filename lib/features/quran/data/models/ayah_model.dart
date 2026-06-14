@@ -19,4 +19,6 @@ class AyahModel {
       juz: json['juz'],
     );
   }
+
+  int get numberInSurah => number;
 }

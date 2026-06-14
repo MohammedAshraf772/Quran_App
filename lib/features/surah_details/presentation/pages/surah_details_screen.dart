@@ -1,6 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran_app/features/bookmark/ayah_bookmark_model.dart';
+import 'package:quran_app/features/bookmark/bookmark_model.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/network/api_service.dart';
 import '../../../../core/services/local_storage_service.dart';
@@ -223,25 +226,117 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                               padding: EdgeInsets.all(24.w),
 
                               child: SingleChildScrollView(
-                                child: Text(
-                                  pages[index]
-                                      .map((e) => '${e.text} ﴿${e.number}﴾')
-                                      .join(' '),
+                                child: Column(
+                                  children:
+                                      pages[index].map((ayah) {
+                                        return Card(
+                                          margin: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(12),
+                                            child: Column(
+                                              children: [
+                                                SelectableText(
+                                                  '${ayah.text} ﴿${ayah.numberInSurah}﴾',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 28.sp,
+                                                    height: 2,
+                                                    color:
+                                                        Theme.of(context)
+                                                            .textTheme
+                                                            .bodyLarge
+                                                            ?.color,
+                                                  ),
+                                                ),
 
-                                  textAlign: TextAlign.center,
+                                                const SizedBox(height: 8),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.bookmark_add,
+                                                      ),
+                                                      onPressed: () async {
+                                                        await LocalStorageService.addAyahBookmark(
+                                                          AyahBookmarkModel(
+                                                            surahNumber:
+                                                                widget
+                                                                    .surah
+                                                                    .number,
+                                                            ayahNumber:
+                                                                ayah.numberInSurah,
+                                                            surahName:
+                                                                widget
+                                                                    .surah
+                                                                    .name,
+                                                            ayahText: ayah.text,
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.menu_book,
+                                                      ),
+                                                      onPressed: () async {
+                                                        final repository =
+                                                            QuranRepository(
+                                                              QuranRemoteDataSource(
+                                                                ApiService(),
+                                                              ),
+                                                            );
 
-                                  textDirection: Directionality.of(context),
+                                                        final tafsir =
+                                                            await repository
+                                                                .getTafsir(
+                                                                  widget
+                                                                      .surah
+                                                                      .number,
+                                                                  ayah.numberInSurah,
+                                                                );
 
-                                  style: TextStyle(
-                                    fontSize: 30.sp,
+                                                        if (!context.mounted)
+                                                          return;
 
-                                    height: 2.4,
-
-                                    color:
-                                        Theme.of(
-                                          context,
-                                        ).textTheme.bodyLarge?.color,
-                                  ),
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (_) {
+                                                            return AlertDialog(
+                                                              title: const Text(
+                                                                'التفسير',
+                                                              ),
+                                                              content:
+                                                                  SingleChildScrollView(
+                                                                    child: Text(
+                                                                      tafsir,
+                                                                    ),
+                                                                  ),
+                                                            );
+                                                          },
+                                                        );
+                                                      },
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.share,
+                                                      ),
+                                                      onPressed: () {
+                                                        Share.share(
+                                                          '${ayah.text}\n\n${widget.surah.name}',
+                                                        );
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
                                 ),
                               ),
                             ),
@@ -290,13 +385,34 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
       child: Column(
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
+              ),
+
+              IconButton(
+                onPressed: () async {
+                  await LocalStorageService.addBookmark(
+                    BookmarkModel(
+                      surahNumber: widget.surah.number,
+                      surahName: widget.surah.name,
+                      englishName: widget.surah.englishName,
+                    ),
+                  );
+
+                  if (!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${widget.surah.name} added to bookmarks'),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.bookmark_add, color: Colors.white),
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:quran_app/features/bookmark/ayah_bookmark_model.dart';
 import 'package:quran_app/features/bookmark/bookmark_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -107,4 +108,6 @@ class LocalStorageService {
       return BookmarkModel.fromJson(jsonDecode(item));
     }).toList();
   }
+
+  static addAyahBookmark(AyahBookmarkModel ayahBookmarkModel) {}
 }

@@ -52,4 +52,12 @@ class QuranRemoteDataSource {
       rethrow;
     }
   }
+
+  Future<String> getTafsir(int surahNumber, int ayahNumber) async {
+    final response = await apiService.dio.get(
+      'ayah/$surahNumber:$ayahNumber/ar.muyassar',
+    );
+
+    return response.data['data']['text'];
+  }
 }
