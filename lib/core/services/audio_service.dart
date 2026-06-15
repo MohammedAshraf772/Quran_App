@@ -1,15 +1,11 @@
-import 'package:just_audio/just_audio.dart';
+import 'package:dio/dio.dart';
 
 class AudioService {
-  final player = AudioPlayer();
+  final Dio dio = Dio(BaseOptions(baseUrl: 'https://api.alquran.cloud/v1/'));
 
-  Future<void> playAudio(String url) async {
-    await player.setUrl(url);
+  Future<String> getSurahAudio(int surahNumber) async {
+    final response = await dio.get('surah/$surahNumber/ar.alafasy');
 
-    player.play();
-  }
-
-  Future<void> stopAudio() async {
-    await player.stop();
+    return response.data['data']['ayahs'][0]['audio'];
   }
 }

@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:quran_app/core/services/audio_service.dart';
 import 'package:quran_app/features/bookmark/ayah_bookmark_model.dart';
 import 'package:quran_app/features/bookmark/bookmark_model.dart';
 import 'package:share_plus/share_plus.dart';
@@ -30,6 +32,10 @@ class SurahDetailsScreen extends StatefulWidget {
 }
 
 class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
+  final AudioPlayer player = AudioPlayer();
+
+  final AudioService audioService = AudioService();
+  bool isPlaying = false;
   List<AyahModel> ayahs = [];
 
   bool isLoading = true;
@@ -169,6 +175,8 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
   @override
   void dispose() {
+    player.dispose();
+
     pageController.dispose();
 
     super.dispose();
@@ -394,25 +402,63 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
 
-              IconButton(
-                onPressed: () async {
-                  await LocalStorageService.addBookmark(
-                    BookmarkModel(
-                      surahNumber: widget.surah.number,
-                      surahName: widget.surah.name,
-                      englishName: widget.surah.englishName,
-                    ),
-                  );
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () async {
+                      try {
+                        if (isPlaying) {
+                          await player.pause();
 
-                  if (!mounted) return;
+                          setState(() {
+                            isPlaying = false;
+                          });
+                        } else {
+                          final audioUrl = await audioService.getSurahAudio(
+                            widget.surah.number,
+                          );
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${widget.surah.name} added to bookmarks'),
+                          await player.setUrl(audioUrl);
+
+                          await player.play();
+
+                          setState(() {
+                            isPlaying = true;
+                          });
+                        }
+                      } catch (e) {
+                        debugPrint('Audio Error => $e');
+                      }
+                    },
+                    icon: Icon(
+                      isPlaying ? Icons.pause_circle : Icons.play_circle_fill,
+                      color: Colors.white,
                     ),
-                  );
-                },
-                icon: const Icon(Icons.bookmark_add, color: Colors.white),
+                  ),
+
+                  IconButton(
+                    onPressed: () async {
+                      await LocalStorageService.addBookmark(
+                        BookmarkModel(
+                          surahNumber: widget.surah.number,
+                          surahName: widget.surah.name,
+                          englishName: widget.surah.englishName,
+                        ),
+                      );
+
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${widget.surah.name} added to bookmarks',
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.bookmark_add, color: Colors.white),
+                  ),
+                ],
               ),
             ],
           ),
