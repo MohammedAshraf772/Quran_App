@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app/core/services/audio_service.dart';
 import 'package:quran_app/features/bookmark/bookmark_model.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../quran/data/datasource/quran_remote_datasource.dart';
@@ -170,31 +171,102 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton(
-            heroTag: 'bookmark',
-            backgroundColor: const Color(0xFF015248),
-            onPressed: () async {
-              await LocalStorageService.addBookmark(
-                BookmarkModel(
-                  surahNumber: widget.surah.number,
-                  surahName: widget.surah.name,
-                  englishName: widget.surah.englishName,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 18, left: 30, right: 30),
+          child: Container(
+            height: 65,
+            decoration: BoxDecoration(
+              color: const Color(0xff015248),
+              borderRadius: BorderRadius.circular(35),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
                 ),
-              );
-            },
-            child: const Icon(Icons.bookmark_add, color: Colors.white70),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                /// Play
+                IconButton(
+                  onPressed: () async {
+                    if (!isPlaying) {
+                      final url = await audioService.getSurahAudio(
+                        widget.surah.number,
+                      );
+
+                      await player.setUrl(url);
+
+                      player.play();
+
+                      setState(() {
+                        isPlaying = true;
+                      });
+
+                      player.playerStateStream.listen((state) {
+                        if (state.processingState ==
+                            ProcessingState.completed) {
+                          setState(() {
+                            isPlaying = false;
+                          });
+                        }
+                      });
+                    } else {
+                      player.stop();
+
+                      setState(() {
+                        isPlaying = false;
+                      });
+                    }
+                  },
+                  icon: Icon(
+                    isPlaying ? Icons.pause_circle : Icons.play_circle_fill,
+                    color: Colors.white,
+                    size: 34,
+                  ),
+                ),
+
+                /// Bookmark
+                IconButton(
+                  onPressed: () async {
+                    await LocalStorageService.addBookmark(
+                      BookmarkModel(
+                        surahNumber: widget.surah.number,
+                        surahName: widget.surah.name,
+                        englishName: widget.surah.englishName,
+                      ),
+                    );
+
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Added to bookmarks")),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.bookmark_add,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+
+                /// Share
+                IconButton(
+                  onPressed: () {
+                    Share.share(
+                      "${widget.surah.name}\n\n"
+                      "${ayahs.map((e) => e.text).join(" ")}",
+                    );
+                  },
+                  icon: const Icon(Icons.share, color: Colors.white, size: 30),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          FloatingActionButton(
-            heroTag: 'share',
-            backgroundColor: const Color(0xFF015248),
-            onPressed: () {},
-            child: const Icon(Icons.share, color: Colors.white70),
-          ),
-        ],
+        ),
       ),
       body:
           isLoading
