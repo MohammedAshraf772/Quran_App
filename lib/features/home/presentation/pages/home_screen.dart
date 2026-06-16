@@ -2,11 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:quran_app/core/network/api_service.dart';
 import 'package:quran_app/features/bookmark/bookmark_screen.dart';
 import 'package:quran_app/features/profail/presentation/pages/profile_screen.dart';
-import 'package:quran_app/features/quran/data/datasource/quran_remote_datasource.dart';
-import 'package:quran_app/features/quran/data/repositories/quran_repository.dart';
 import 'package:quran_app/features/surah_details/presentation/pages/surah_details_screen.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_storage_service.dart';
@@ -33,28 +30,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadLastRead();
     });
-
     context.read<QuranCubit>().getSurahs();
   }
 
   Future<void> loadLastRead() async {
     final data = LocalStorageService.getLastRead();
-
     if (!mounted) return;
-
     setState(() {
       lastReadSurah = data['surahName'];
-
       lastReadAyah = data['ayahNumber'];
-
       lastReadPage = data['pageNumber'];
-
       lastReadAyahText = data['ayahText'];
-
       lastReadSurahNumber = data['surahNumber'];
     });
   }
@@ -62,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     searchController.dispose();
-
     super.dispose();
   }
 
@@ -70,22 +58,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       bottomNavigationBar: Container(
         margin: EdgeInsets.only(left: 24.w, right: 24.w, bottom: 24.h),
-
         height: 74.h,
-
         decoration: BoxDecoration(
           color: AppColors.primary,
-
           borderRadius: BorderRadius.circular(28.r),
         ),
-
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-
           children: [
             navItem(Icons.home_filled, 0),
             navItem(Icons.bookmark, 1),
@@ -93,17 +75,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
               SizedBox(height: 18.h),
-
               header(),
               SizedBox(height: 28.h),
               searchField(),
@@ -118,7 +96,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               SizedBox(height: 24.h),
 
               Expanded(
@@ -127,11 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (state is QuranLoading) {
                       return const Center(child: CircularProgressIndicator());
                     }
-
                     if (state is QuranError) {
                       return Center(child: Text(state.message));
                     }
-
                     if (state is QuranLoaded) {
                       final query = normalize(searchController.text.trim());
                       final surahs =
@@ -147,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ).contains(query) ||
                                     surah.number.toString().contains(query);
                               }).toList();
-
                       if (surahs.isEmpty) {
                         return Center(
                           child: Text(
@@ -160,14 +134,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                       }
-
                       return ListView.separated(
                         padding: EdgeInsets.only(bottom: 20.h),
-
                         itemCount: surahs.length,
-
                         separatorBuilder: (_, __) => SizedBox(height: 16.h),
-
                         itemBuilder: (context, index) {
                           return SurahTile(
                             surah: surahs[index],
@@ -179,7 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       );
                     }
-
                     return const SizedBox();
                   },
                 ),

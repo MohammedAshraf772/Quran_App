@@ -3,13 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app/core/services/audio_service.dart';
-import 'package:quran_app/features/bookmark/ayah_bookmark_model.dart';
 import 'package:quran_app/features/bookmark/bookmark_model.dart';
-import 'package:share_plus/share_plus.dart';
-
 import '../../../../core/network/api_service.dart';
 import '../../../../core/services/local_storage_service.dart';
-
 import '../../../quran/data/datasource/quran_remote_datasource.dart';
 import '../../../quran/data/models/ayah_model.dart';
 import '../../../quran/data/models/surah_model.dart';
@@ -37,17 +33,11 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   final AudioService audioService = AudioService();
   bool isPlaying = false;
   List<AyahModel> ayahs = [];
-
   bool isLoading = true;
-
   late PageController pageController;
-
   int currentPageIndex = 0;
-
   List<List<AyahModel>> pages = [];
-
   List<int> pageNumbers = [];
-
   @override
   void initState() {
     super.initState();
@@ -75,24 +65,20 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
         'Surah: ${widget.surah.englishName} - Ayahs Count: ${ayahs.length}',
       );
       final Map<int, List<AyahModel>> grouped = {};
-
       for (final ayah in ayahs) {
         grouped.putIfAbsent(ayah.page, () => []);
-
         grouped[ayah.page]!.add(ayah);
       }
-
-      pages = grouped.values.toList();
-
-      pageNumbers = grouped.keys.toList();
-
+      final sortedPages = grouped.keys.toList()..sort();
+      pageNumbers = sortedPages;
+      pages =
+          sortedPages.map((page) {
+            return grouped[page]!;
+          }).toList();
       final lastRead = LocalStorageService.getLastRead();
-
       if (lastRead['surahNumber'] == widget.surah.number) {
         final savedPage = lastRead['pageNumber'];
-
         final savedIndex = pageNumbers.indexOf(savedPage);
-
         if (savedIndex != -1) {
           currentPageIndex = savedIndex;
         }
@@ -158,9 +144,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
       surahNumber: 1,
       ayahText: '',
     );
-
     if (!mounted) return;
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -186,6 +170,32 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: 'bookmark',
+            backgroundColor: const Color(0xFF015248),
+            onPressed: () async {
+              await LocalStorageService.addBookmark(
+                BookmarkModel(
+                  surahNumber: widget.surah.number,
+                  surahName: widget.surah.name,
+                  englishName: widget.surah.englishName,
+                ),
+              );
+            },
+            child: const Icon(Icons.bookmark_add, color: Colors.white70),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: 'share',
+            backgroundColor: const Color(0xFF015248),
+            onPressed: () {},
+            child: const Icon(Icons.share, color: Colors.white70),
+          ),
+        ],
+      ),
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -222,129 +232,29 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                                 color: Theme.of(context).cardColor,
 
                                 borderRadius: BorderRadius.circular(24),
-
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 10,
-                                  ),
-                                ],
                               ),
 
                               padding: EdgeInsets.all(24.w),
 
                               child: SingleChildScrollView(
-                                child: Column(
-                                  children:
-                                      pages[index].map((ayah) {
-                                        return Card(
-                                          margin: const EdgeInsets.symmetric(
-                                            vertical: 8,
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(12),
-                                            child: Column(
-                                              children: [
-                                                SelectableText(
-                                                  '${ayah.text} ﴿${ayah.numberInSurah}﴾',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: 28.sp,
-                                                    height: 2,
-                                                    color:
-                                                        Theme.of(context)
-                                                            .textTheme
-                                                            .bodyLarge
-                                                            ?.color,
-                                                  ),
-                                                ),
+                                child: SelectableText(
+                                  pages[index]
+                                      .map(
+                                        (e) => '${e.text} ﴿${e.numberInSurah}﴾',
+                                      )
+                                      .join(' '),
 
-                                                const SizedBox(height: 8),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    IconButton(
-                                                      icon: const Icon(
-                                                        Icons.bookmark_add,
-                                                      ),
-                                                      onPressed: () async {
-                                                        await LocalStorageService.addAyahBookmark(
-                                                          AyahBookmarkModel(
-                                                            surahNumber:
-                                                                widget
-                                                                    .surah
-                                                                    .number,
-                                                            ayahNumber:
-                                                                ayah.numberInSurah,
-                                                            surahName:
-                                                                widget
-                                                                    .surah
-                                                                    .name,
-                                                            ayahText: ayah.text,
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                    IconButton(
-                                                      icon: const Icon(
-                                                        Icons.menu_book,
-                                                      ),
-                                                      onPressed: () async {
-                                                        final repository =
-                                                            QuranRepository(
-                                                              QuranRemoteDataSource(
-                                                                ApiService(),
-                                                              ),
-                                                            );
+                                  textAlign: TextAlign.center,
 
-                                                        final tafsir =
-                                                            await repository
-                                                                .getTafsir(
-                                                                  widget
-                                                                      .surah
-                                                                      .number,
-                                                                  ayah.numberInSurah,
-                                                                );
-
-                                                        if (!context.mounted)
-                                                          return;
-
-                                                        showDialog(
-                                                          context: context,
-                                                          builder: (_) {
-                                                            return AlertDialog(
-                                                              title: const Text(
-                                                                'التفسير',
-                                                              ),
-                                                              content:
-                                                                  SingleChildScrollView(
-                                                                    child: Text(
-                                                                      tafsir,
-                                                                    ),
-                                                                  ),
-                                                            );
-                                                          },
-                                                        );
-                                                      },
-                                                    ),
-                                                    IconButton(
-                                                      icon: const Icon(
-                                                        Icons.share,
-                                                      ),
-                                                      onPressed: () {
-                                                        Share.share(
-                                                          '${ayah.text}\n\n${widget.surah.name}',
-                                                        );
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
+                                  style: TextStyle(
+                                    fontSize: 30.sp,
+                                    height: 2.3,
+                                    fontFamily: 'Amiri',
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color,
+                                  ),
                                 ),
                               ),
                             ),
@@ -401,65 +311,6 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                 },
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () async {
-                      try {
-                        if (isPlaying) {
-                          await player.pause();
-
-                          setState(() {
-                            isPlaying = false;
-                          });
-                        } else {
-                          final audioUrl = await audioService.getSurahAudio(
-                            widget.surah.number,
-                          );
-
-                          await player.setUrl(audioUrl);
-
-                          await player.play();
-
-                          setState(() {
-                            isPlaying = true;
-                          });
-                        }
-                      } catch (e) {
-                        debugPrint('Audio Error => $e');
-                      }
-                    },
-                    icon: Icon(
-                      isPlaying ? Icons.pause_circle : Icons.play_circle_fill,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  IconButton(
-                    onPressed: () async {
-                      await LocalStorageService.addBookmark(
-                        BookmarkModel(
-                          surahNumber: widget.surah.number,
-                          surahName: widget.surah.name,
-                          englishName: widget.surah.englishName,
-                        ),
-                      );
-
-                      if (!mounted) return;
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${widget.surah.name} added to bookmarks',
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.bookmark_add, color: Colors.white),
-                  ),
-                ],
-              ),
             ],
           ),
 
@@ -472,12 +323,9 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-
           SizedBox(height: 8.h),
-
           Text(
             widget.surah.englishName,
-
             style: TextStyle(color: Colors.white70, fontSize: 18.sp),
           ),
         ],
