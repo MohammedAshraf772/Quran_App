@@ -30,15 +30,17 @@ class SurahDetailsScreen extends StatefulWidget {
 
 class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   final AudioPlayer player = AudioPlayer();
-
   final AudioService audioService = AudioService();
   bool isPlaying = false;
+  bool isLoadingAudio = false;
+  int currentAyahIndex = 0;
   List<AyahModel> ayahs = [];
   bool isLoading = true;
   late PageController pageController;
   int currentPageIndex = 0;
   List<List<AyahModel>> pages = [];
   List<int> pageNumbers = [];
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +48,62 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     pageController = PageController();
 
     loadSurah();
+    player.currentIndexStream.listen((index) {
+      if (!mounted || index == null) return;
+
+      setState(() {
+        currentAyahIndex = index;
+      });
+    });
+
+    player.playerStateStream.listen((state) async {
+      if (!mounted) return;
+
+      if (state.processingState == ProcessingState.completed) {
+        setState(() {
+          isPlaying = false;
+          currentAyahIndex = 0;
+        });
+
+        if (widget.autoNextSurah) {
+          await goToNextSurah();
+        }
+      }
+    });
+  }
+
+  Future<void> playSurah() async {
+    if (isLoadingAudio) return;
+
+    setState(() {
+      isLoadingAudio = true;
+    });
+
+    try {
+      final urls = await audioService.getSurahAudio(widget.surah.number);
+
+      await player.stop();
+
+      await player.setAudioSource(
+        ConcatenatingAudioSource(
+          children: urls.map((url) => AudioSource.uri(Uri.parse(url))).toList(),
+        ),
+      );
+
+      await player.play();
+
+      setState(() {
+        isPlaying = true;
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoadingAudio = false;
+      });
+    }
   }
 
   Future<void> loadSurah() async {
@@ -159,9 +217,9 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   }
 
   @override
-  void dispose() {
-    player.dispose();
-
+  Future<void> dispose() async {
+    await player.stop();
+    await player.dispose();
     pageController.dispose();
 
     super.dispose();
@@ -193,40 +251,35 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                 /// Play
                 IconButton(
                   onPressed: () async {
+                    if (isLoadingAudio) return;
+
                     if (!isPlaying) {
-                      final url = await audioService.getSurahAudio(
-                        widget.surah.number,
-                      );
-
-                      await player.setUrl(url);
-
-                      player.play();
-
-                      setState(() {
-                        isPlaying = true;
-                      });
-
-                      player.playerStateStream.listen((state) {
-                        if (state.processingState ==
-                            ProcessingState.completed) {
-                          setState(() {
-                            isPlaying = false;
-                          });
-                        }
-                      });
+                      await playSurah();
                     } else {
-                      player.stop();
+                      await player.pause();
 
                       setState(() {
                         isPlaying = false;
                       });
                     }
                   },
-                  icon: Icon(
-                    isPlaying ? Icons.pause_circle : Icons.play_circle_fill,
-                    color: Colors.white,
-                    size: 34,
-                  ),
+                  icon:
+                      isLoadingAudio
+                          ? const SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : Icon(
+                            isPlaying
+                                ? Icons.pause_circle
+                                : Icons.play_circle_fill,
+                            color: Colors.white,
+                            size: 34,
+                          ),
                 ),
 
                 /// Bookmark
