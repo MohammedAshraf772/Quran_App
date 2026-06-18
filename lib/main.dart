@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran_app/core/language/language_cubit.dart';
 
 import 'app/app_router.dart';
@@ -22,6 +23,12 @@ Future<void> main() async {
   await EasyLocalization.ensureInitialized();
 
   await LocalStorageService.init();
+
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.quran_app.audio',
+    androidNotificationChannelName: 'Quran Audio',
+    androidNotificationOngoing: true,
+  );
 
   runApp(
     EasyLocalization(
@@ -45,7 +52,6 @@ class QuranApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(390, 844),
-
       builder: (_, __) {
         return MultiBlocProvider(
           providers: [
@@ -55,12 +61,9 @@ class QuranApp extends StatelessWidget {
                     QuranRepository(QuranRemoteDataSource(ApiService())),
                   )..getSurahs(),
             ),
-
             BlocProvider(create: (_) => ThemeCubit()),
-
             BlocProvider(create: (_) => LanguageCubit()),
           ],
-
           child: BlocBuilder<ThemeCubit, bool>(
             builder: (context, isDark) {
               return BlocListener<LanguageCubit, Locale>(
@@ -71,19 +74,12 @@ class QuranApp extends StatelessWidget {
                   builder: (context, isDark) {
                     return MaterialApp.router(
                       debugShowCheckedModeBanner: false,
-
                       locale: context.locale,
-
                       supportedLocales: context.supportedLocales,
-
                       localizationsDelegates: context.localizationDelegates,
-
                       theme: AppTheme.lightTheme,
-
                       darkTheme: AppTheme.darkTheme,
-
                       themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-
                       routerConfig: AppRouter.router,
                     );
                   },

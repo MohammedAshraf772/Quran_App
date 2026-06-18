@@ -44,6 +44,11 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.autoNextSurah) {
+        await playSurah();
+      }
+    });
 
     pageController = PageController();
 
@@ -53,6 +58,13 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
 
       setState(() {
         currentAyahIndex = index;
+      });
+    });
+    player.playingStream.listen((playing) {
+      if (!mounted) return;
+
+      setState(() {
+        isPlaying = playing;
       });
     });
 
@@ -82,19 +94,17 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     try {
       final urls = await audioService.getSurahAudio(widget.surah.number);
 
-      await player.stop();
-
       await player.setAudioSource(
         ConcatenatingAudioSource(
-          children: urls.map((url) => AudioSource.uri(Uri.parse(url))).toList(),
+          children: urls.map((e) => AudioSource.uri(Uri.parse(e))).toList(),
         ),
       );
 
+      await player.seek(Duration.zero, index: 0);
+
       await player.play();
 
-      setState(() {
-        isPlaying = true;
-      });
+      isPlaying = true;
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -211,6 +221,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
             (_) => SurahDetailsScreen(
               surah: nextSurah,
               allSurahs: widget.allSurahs,
+              autoNextSurah: true,
             ),
       ),
     );
@@ -233,7 +244,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
         child: Padding(
           padding: const EdgeInsets.only(bottom: 18, left: 30, right: 30),
           child: Container(
-            height: 65,
+            height: 110,
             decoration: BoxDecoration(
               color: const Color(0xff015248),
               borderRadius: BorderRadius.circular(35),
@@ -245,76 +256,115 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                /// Play
-                IconButton(
-                  onPressed: () async {
-                    if (isLoadingAudio) return;
+                StreamBuilder<Duration>(
+                  stream: player.positionStream,
+                  builder: (context, snapshot) {
+                    final position = snapshot.data ?? Duration.zero;
+                    final total = player.duration ?? Duration.zero;
 
-                    if (!isPlaying) {
-                      await playSurah();
-                    } else {
-                      await player.pause();
-
-                      setState(() {
-                        isPlaying = false;
-                      });
-                    }
+                    return Slider(
+                      value:
+                          position.inSeconds
+                              .clamp(0, total.inSeconds)
+                              .toDouble(),
+                      max:
+                          total.inSeconds == 0 ? 1 : total.inSeconds.toDouble(),
+                      onChanged: (value) {
+                        player.seek(Duration(seconds: value.toInt()));
+                      },
+                    );
                   },
-                  icon:
-                      isLoadingAudio
-                          ? const SizedBox(
-                            width: 30,
-                            height: 30,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                          : Icon(
-                            isPlaying
-                                ? Icons.pause_circle
-                                : Icons.play_circle_fill,
-                            color: Colors.white,
-                            size: 34,
-                          ),
                 ),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      /// Play
+                      IconButton(
+                        onPressed: () async {
+                          if (isLoadingAudio) return;
 
-                /// Bookmark
-                IconButton(
-                  onPressed: () async {
-                    await LocalStorageService.addBookmark(
-                      BookmarkModel(
-                        surahNumber: widget.surah.number,
-                        surahName: widget.surah.name,
-                        englishName: widget.surah.englishName,
+                          if (player.audioSource == null) {
+                            await playSurah();
+                            return;
+                          }
+
+                          if (player.playing) {
+                            await player.pause();
+
+                            setState(() {
+                              isPlaying = false;
+                            });
+                          } else {
+                            await player.play();
+
+                            setState(() {
+                              isPlaying = true;
+                            });
+                          }
+                        },
+                        icon:
+                            isLoadingAudio
+                                ? const SizedBox(
+                                  width: 30,
+                                  height: 30,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : Icon(
+                                  isPlaying
+                                      ? Icons.pause_circle
+                                      : Icons.play_circle_fill,
+                                  color: Colors.white,
+                                  size: 34,
+                                ),
                       ),
-                    );
 
-                    if (!mounted) return;
+                      /// Bookmark
+                      IconButton(
+                        onPressed: () async {
+                          await LocalStorageService.addBookmark(
+                            BookmarkModel(
+                              surahNumber: widget.surah.number,
+                              surahName: widget.surah.name,
+                              englishName: widget.surah.englishName,
+                            ),
+                          );
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Added to bookmarks")),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.bookmark_add,
-                    color: Colors.white,
-                    size: 30,
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Added to bookmarks")),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.bookmark_add,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+
+                      /// Share
+                      IconButton(
+                        onPressed: () {
+                          Share.share(
+                            "${widget.surah.name}\n\n"
+                            "${ayahs.map((e) => e.text).join(" ")}",
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.share,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-
-                /// Share
-                IconButton(
-                  onPressed: () {
-                    Share.share(
-                      "${widget.surah.name}\n\n"
-                      "${ayahs.map((e) => e.text).join(" ")}",
-                    );
-                  },
-                  icon: const Icon(Icons.share, color: Colors.white, size: 30),
                 ),
               ],
             ),
@@ -362,23 +412,38 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                               padding: EdgeInsets.all(24.w),
 
                               child: SingleChildScrollView(
-                                child: SelectableText(
-                                  pages[index]
-                                      .map(
-                                        (e) => '${e.text} ﴿${e.numberInSurah}﴾',
-                                      )
-                                      .join(' '),
-
+                                child: RichText(
                                   textAlign: TextAlign.center,
+                                  text: TextSpan(
+                                    children: List.generate(
+                                      pages[index].length,
+                                      (i) {
+                                        final ayah = pages[index][i];
 
-                                  style: TextStyle(
-                                    fontSize: 30.sp,
-                                    height: 2.3,
-                                    fontFamily: 'Amiri',
-                                    color:
-                                        Theme.of(
-                                          context,
-                                        ).textTheme.bodyLarge?.color,
+                                        final globalIndex = ayahs.indexOf(ayah);
+
+                                        return TextSpan(
+                                          text:
+                                              "${ayah.text} ﴿${ayah.number}﴾ ",
+                                          style: TextStyle(
+                                            fontFamily: "Amiri",
+                                            fontSize: 30.sp,
+                                            height: 2.3,
+                                            color:
+                                                globalIndex == currentAyahIndex
+                                                    ? Colors.green
+                                                    : Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge!
+                                                        .color,
+                                            fontWeight:
+                                                globalIndex == currentAyahIndex
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
                               ),
@@ -431,7 +496,11 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                onPressed: () {
+                onPressed: () async {
+                  await player.stop();
+
+                  if (!mounted) return;
+
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
