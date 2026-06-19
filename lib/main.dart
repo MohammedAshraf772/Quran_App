@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran_app/core/language/language_cubit.dart';
 
 import 'app/app_router.dart';
@@ -23,12 +22,6 @@ Future<void> main() async {
   await EasyLocalization.ensureInitialized();
 
   await LocalStorageService.init();
-
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.quran_app.audio',
-    androidNotificationChannelName: 'Quran Audio',
-    androidNotificationOngoing: true,
-  );
 
   runApp(
     EasyLocalization(

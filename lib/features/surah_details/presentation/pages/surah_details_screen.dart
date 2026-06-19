@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -29,6 +31,9 @@ class SurahDetailsScreen extends StatefulWidget {
 }
 
 class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
+  late final StreamSubscription<int?> currentIndexSub;
+  late final StreamSubscription<bool> playingSub;
+  late final StreamSubscription<PlayerState> playerStateSub;
   final AudioPlayer player = AudioPlayer();
   final AudioService audioService = AudioService();
   bool isPlaying = false;
@@ -44,23 +49,22 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (widget.autoNextSurah) {
-        await playSurah();
-      }
-    });
 
     pageController = PageController();
 
     loadSurah();
-    player.currentIndexStream.listen((index) {
+
+    pageController = PageController();
+
+    loadSurah();
+    currentIndexSub = player.currentIndexStream.listen((index) {
       if (!mounted || index == null) return;
 
       setState(() {
         currentAyahIndex = index;
       });
     });
-    player.playingStream.listen((playing) {
+    playingSub = player.playingStream.listen((playing) {
       if (!mounted) return;
 
       setState(() {
@@ -68,7 +72,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
       });
     });
 
-    player.playerStateStream.listen((state) async {
+    playerStateSub = player.playerStateStream.listen((state) async {
       if (!mounted) return;
 
       if (state.processingState == ProcessingState.completed) {
@@ -210,7 +214,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
       surahName: nextSurah.englishName,
       ayahNumber: 1,
       pageNumber: 1,
-      surahNumber: 1,
+      surahNumber: nextSurah.number,
       ayahText: '',
     );
     if (!mounted) return;
@@ -228,9 +232,14 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   }
 
   @override
-  Future<void> dispose() async {
-    await player.stop();
-    await player.dispose();
+  void dispose() {
+    currentIndexSub.cancel();
+    playingSub.cancel();
+    playerStateSub.cancel();
+
+    player.stop();
+    player.dispose();
+
     pageController.dispose();
 
     super.dispose();
