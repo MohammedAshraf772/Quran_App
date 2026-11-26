@@ -2,24 +2,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/models/surah_model.dart';
 import '../../data/repositories/quran_repository.dart';
-
 import 'quran_state.dart';
 
 class QuranCubit extends Cubit<QuranState> {
-  final QuranRepository repository;
+  final QuranRepository _repository;
 
-  QuranCubit(this.repository) : super(QuranInitial());
+  QuranCubit(this._repository) : super(QuranInitial());
 
-  List<SurahModel> allSurahs = [];
+  List<SurahModel> _allSurahs = const [];
 
   Future<void> getSurahs() async {
     emit(QuranLoading());
 
     try {
-      final surahs = await repository.getSurahs();
-
-      allSurahs = surahs;
-
+      final surahs = await _repository.getSurahs();
+      _allSurahs = surahs;
       emit(QuranLoaded(surahs));
     } catch (e) {
       emit(QuranError(e.toString()));
@@ -27,17 +24,17 @@ class QuranCubit extends Cubit<QuranState> {
   }
 
   void searchSurah(String query) {
-    if (query.isEmpty) {
-      emit(QuranLoaded(allSurahs));
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) {
+      emit(QuranLoaded(_allSurahs));
       return;
     }
 
+    final lowerQuery = trimmedQuery.toLowerCase();
     final filtered =
-        allSurahs.where((surah) {
-          return surah.englishName.toLowerCase().contains(
-                query.toLowerCase(),
-              ) ||
-              surah.name.contains(query);
+        _allSurahs.where((surah) {
+          return surah.englishName.toLowerCase().contains(lowerQuery) ||
+              surah.name.contains(trimmedQuery);
         }).toList();
 
     emit(QuranLoaded(filtered));
