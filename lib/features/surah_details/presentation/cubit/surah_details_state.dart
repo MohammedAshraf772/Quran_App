@@ -1,35 +1,59 @@
-import 'package:quran_app/features/quran/data/models/ayah_model.dart';
+import '../../../quran/data/models/ayah_model.dart';
 
-abstract class SurahDetailsState {}
-
-class SurahDetailsInitial extends SurahDetailsState {}
-
-class SurahDetailsLoading extends SurahDetailsState {}
-
-class SurahDetailsLoaded extends SurahDetailsState {
+class SurahDetailsState {
+  final bool isLoading;
   final List<AyahModel> ayahs;
   final List<List<AyahModel>> pages;
   final List<int> pageNumbers;
   final int currentPageIndex;
+  final String? errorMessage;
 
-  SurahDetailsLoaded({
-    required this.ayahs,
-    required this.pages,
-    required this.pageNumbers,
-    required this.currentPageIndex,
+  const SurahDetailsState({
+    this.isLoading = true,
+    this.ayahs = const [],
+    this.pages = const [],
+    this.pageNumbers = const [],
+    this.currentPageIndex = 0,
+    this.errorMessage,
   });
 
-  SurahDetailsLoaded copyWith({int? currentPageIndex}) {
-    return SurahDetailsLoaded(
-      ayahs: ayahs,
-      pages: pages,
-      pageNumbers: pageNumbers,
+  SurahDetailsState copyWith({
+    bool? isLoading,
+    List<AyahModel>? ayahs,
+    List<List<AyahModel>>? pages,
+    List<int>? pageNumbers,
+    int? currentPageIndex,
+    String? errorMessage,
+  }) {
+    return SurahDetailsState(
+      isLoading: isLoading ?? this.isLoading,
+      ayahs: ayahs ?? this.ayahs,
+      pages: pages ?? this.pages,
+      pageNumbers: pageNumbers ?? this.pageNumbers,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
+      errorMessage: errorMessage,
     );
   }
-}
 
-class SurahDetailsError extends SurahDetailsState {
-  final String message;
-  SurahDetailsError(this.message);
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is SurahDetailsState &&
+        other.isLoading == isLoading &&
+        other.ayahs == ayahs &&
+        other.pages == pages &&
+        other.pageNumbers == pageNumbers &&
+        other.currentPageIndex == currentPageIndex &&
+        other.errorMessage == errorMessage;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    isLoading,
+    ayahs,
+    pages,
+    pageNumbers,
+    currentPageIndex,
+    errorMessage,
+  );
 }
