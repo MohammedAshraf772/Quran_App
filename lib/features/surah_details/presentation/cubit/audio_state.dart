@@ -1,46 +1,41 @@
-import 'package:quran_app/features/quran/data/models/ayah_model.dart';
+import 'package:equatable/equatable.dart';
 
-abstract class AudioState {}
-
-class AudioInitial extends AudioState {}
-
-class AudioLoading extends AudioState {}
-
-class AudioPlaying extends AudioState {
+class AudioState extends Equatable {
+  final bool isLoading;
+  final bool isPlaying;
   final int currentAyahIndex;
-  final Duration position;
-  final Duration total;
-  final double playbackSpeed;
-  final List<AyahModel> ayahs;
+  final bool isCompleted;
+  final String? errorMessage;
 
-  AudioPlaying({
-    required this.currentAyahIndex,
-    required this.position,
-    required this.total,
-    required this.ayahs,
-    this.playbackSpeed = 1.0,
+  const AudioState({
+    this.isLoading = false,
+    this.isPlaying = false,
+    this.currentAyahIndex = 0,
+    this.isCompleted = false,
+    this.errorMessage,
   });
-}
 
-class AudioPaused extends AudioState {
-  final int currentAyahIndex;
-  final Duration position;
-  final Duration total;
-  final double playbackSpeed;
-  final List<AyahModel> ayahs;
+  AudioState copyWith({
+    bool? isLoading,
+    bool? isPlaying,
+    int? currentAyahIndex,
+    bool? isCompleted,
+    String? errorMessage,
+  }) {
+    return AudioState(
+      isLoading: isLoading ?? this.isLoading,
+      isPlaying: isPlaying ?? this.isPlaying,
+      currentAyahIndex: currentAyahIndex ?? this.currentAyahIndex,
+      isCompleted: isCompleted ?? this.isCompleted,
+      errorMessage: errorMessage,
+    );
+  }
 
-  AudioPaused({
-    required this.currentAyahIndex,
-    required this.position,
-    required this.total,
-    required this.ayahs,
-    this.playbackSpeed = 1.0,
-  });
-}
-
-class AudioCompleted extends AudioState {}
-
-class AudioError extends AudioState {
-  final String message;
-  AudioError(this.message);
+  List<Object?> get props => [
+    isLoading,
+    isPlaying,
+    currentAyahIndex,
+    isCompleted,
+    errorMessage,
+  ];
 }
