@@ -1,6 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-class AudioState extends Equatable {
+class AudioState {
   final bool isLoading;
   final bool isPlaying;
   final int currentAyahIndex;
@@ -31,11 +29,23 @@ class AudioState extends Equatable {
     );
   }
 
-  List<Object?> get props => [
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AudioState &&
+        other.isLoading == isLoading &&
+        other.isPlaying == isPlaying &&
+        other.currentAyahIndex == currentAyahIndex &&
+        other.isCompleted == isCompleted &&
+        other.errorMessage == errorMessage;
+  }
+
+  @override
+  int get hashCode => Object.hash(
     isLoading,
     isPlaying,
     currentAyahIndex,
     isCompleted,
     errorMessage,
-  ];
+  );
 }
