@@ -37,82 +37,78 @@ class AudioPlayerBar extends StatelessWidget {
           ],
         ),
         child: BlocBuilder<AudioCubit, AudioState>(
-          builder: (context, state) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                StreamBuilder<Duration>(
-                  stream: cubit.player.positionStream,
-                  builder: (context, snapshot) {
-                    final position = snapshot.data ?? Duration.zero;
-                    final total = cubit.player.duration ?? Duration.zero;
-                    final maxSeconds =
-                        total.inSeconds > 0 ? total.inSeconds.toDouble() : 1.0;
-                    final currentSeconds =
-                        position.inSeconds
-                            .clamp(0, maxSeconds.toInt())
-                            .toDouble();
-
-                    return Slider(
-                      value: currentSeconds,
-                      max: maxSeconds,
-                      onChanged: (value) {
-                        cubit.seekTo(Duration(seconds: value.toInt()));
-                      },
-                    );
-                  },
-                ),
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        onPressed:
-                            state.isLoading
-                                ? null
-                                : () => cubit.togglePlaySurah(surahNumber),
-                        icon:
-                            state.isLoading
-                                ? SizedBox(
-                                  width: 30.w,
-                                  height: 30.w,
-                                  child: const CircularProgressIndicator(
+          builder:
+              (context, state) => Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildSlider(cubit),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed:
+                              state.isLoading
+                                  ? null
+                                  : () => cubit.togglePlaySurah(surahNumber),
+                          icon:
+                              state.isLoading
+                                  ? SizedBox(
+                                    width: 30.w,
+                                    height: 30.w,
+                                    child: const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Icon(
+                                    state.isPlaying
+                                        ? Icons.pause_circle
+                                        : Icons.play_circle_fill,
                                     color: Colors.white,
-                                    strokeWidth: 2,
+                                    size: 34.sp,
                                   ),
-                                )
-                                : Icon(
-                                  state.isPlaying
-                                      ? Icons.pause_circle
-                                      : Icons.play_circle_fill,
-                                  color: Colors.white,
-                                  size: 34.sp,
-                                ),
-                      ),
-                      IconButton(
-                        onPressed: onBookmarkPressed,
-                        icon: Icon(
-                          Icons.bookmark_add,
-                          color: Colors.white,
-                          size: 30.sp,
                         ),
-                      ),
-                      IconButton(
-                        onPressed: onSharePressed,
-                        icon: Icon(
-                          Icons.share,
-                          color: Colors.white,
-                          size: 30.sp,
+                        IconButton(
+                          onPressed: onBookmarkPressed,
+                          icon: Icon(
+                            Icons.bookmark_add,
+                            color: Colors.white,
+                            size: 30.sp,
+                          ),
                         ),
-                      ),
-                    ],
+                        IconButton(
+                          onPressed: onSharePressed,
+                          icon: Icon(
+                            Icons.share,
+                            color: Colors.white,
+                            size: 30.sp,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSlider(AudioCubit cubit) {
+    return StreamBuilder<Duration>(
+      stream: cubit.player.positionStream,
+      builder: (context, snapshot) {
+        final pos = snapshot.data ?? Duration.zero;
+        final total = cubit.player.duration ?? Duration.zero;
+        final max = total.inSeconds > 0 ? total.inSeconds.toDouble() : 1.0;
+        final val = pos.inSeconds.clamp(0, max.toInt()).toDouble();
+        return Slider(
+          value: val,
+          max: max,
+          onChanged: (v) => cubit.seekTo(Duration(seconds: v.toInt())),
+        );
+      },
     );
   }
 }
