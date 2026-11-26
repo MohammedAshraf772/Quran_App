@@ -4,8 +4,7 @@ class AudioService {
   final Dio _dio;
 
   AudioService({Dio? dio})
-    : _dio =
-          dio ??
+    : _dio = dio ??
           Dio(
             BaseOptions(
               baseUrl: 'https://api.alquran.cloud/v1/',
